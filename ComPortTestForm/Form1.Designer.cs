@@ -40,6 +40,7 @@ namespace ComPortTestForm
             this.textBoxGetV = new System.Windows.Forms.TextBox();
             this.buttonOutput = new System.Windows.Forms.Button();
             this.buttonRefresh = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonSetValue
@@ -120,7 +121,7 @@ namespace ComPortTestForm
             // 
             // buttonOutput
             // 
-            this.buttonOutput.Location = new System.Drawing.Point(165, 91);
+            this.buttonOutput.Location = new System.Drawing.Point(165, 90);
             this.buttonOutput.Name = "buttonOutput";
             this.buttonOutput.Size = new System.Drawing.Size(53, 23);
             this.buttonOutput.TabIndex = 5;
@@ -138,11 +139,22 @@ namespace ComPortTestForm
             this.buttonRefresh.UseVisualStyleBackColor = true;
             this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
             // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.Red;
+            this.button1.Location = new System.Drawing.Point(208, 90);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(10, 23);
+            this.button1.TabIndex = 11;
+            this.button1.Text = "установка";
+            this.button1.UseVisualStyleBackColor = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(232, 126);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.buttonRefresh);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBoxGetA);
@@ -174,6 +186,7 @@ namespace ComPortTestForm
         private System.Windows.Forms.TextBox textBoxGetV;
         private System.Windows.Forms.Button buttonOutput;
         private System.Windows.Forms.Button buttonRefresh;
+        private System.Windows.Forms.Button button1;
     }
 }
 

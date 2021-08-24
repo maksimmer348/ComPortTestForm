@@ -1,10 +1,12 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,25 +20,35 @@ namespace ComPortTestForm
     {
         MySerialPort Serial = new MySerialPort(4, 9600, 0);
         private Task RunTask;//рабочий поток
+        
         protected ManualResetEvent Suspense = new ManualResetEvent(true);//для приостановки петли измерений значений
         public Form1()
         {
             InitializeComponent();
             Serial.DataReceived += RefreshValues;
-           // Serial.CommandReceived += CommandReceived;
+            // Serial.CommandReceived += CommandReceived;
             Serial.Write(OUTPUT_OFF);
         }
 
-
+        private Thread thr;
 
         private void buttonSetValue_Click(object sender, EventArgs e)
         {
-            RunTask = Task.Run(() => SetValues());
+            thr = new Thread(SetValues);
+            thr.Start();
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
         {
-            RunTask = Task.Run(() => WorkRepeat());
+            thr = new Thread(WorkRepeat);
+            thr.Start();
+           
+        }
+
+        private void buttonOutput_Click(object sender, EventArgs e)
+        {
+            thr = new Thread(OutputSwitch);
+            thr.Start();
         }
 
         private void WorkRepeat()
@@ -44,51 +56,53 @@ namespace ComPortTestForm
             while (true)
             {
                 Serial.Write(RETURN_SET_CURRENT);
-                Thread.Sleep(50);
+                Thread.Sleep(150);
+                var curr = Serial.Read();
+                Suspense.WaitOne();
                 textBoxGetA?.Invoke((Action)(() =>
                 {
-                    textBoxGetA.Text = Serial.Read("ток");
+                    textBoxGetA.Text = curr;
                 }));
-                Thread.Sleep(50);
-                Suspense.WaitOne();
-
+                
                 Serial.Write(RETURN_SET_VOLTAGE);
-                Thread.Sleep(50);
+                Thread.Sleep(150);
+                var volt = Serial.Read();
+                Suspense.WaitOne();
                 textBoxGetV?.Invoke((Action)(() =>
                 {
-                    textBoxGetV.Text = Serial.Read("напряжение");
+                    textBoxGetV.Text = volt;
                 }));
-                Thread.Sleep(50);
-                Suspense.WaitOne();
+                
 
-                Serial.Write(RETURN_OUTPUT);
-                Thread.Sleep(50);
-                Serial.Read("выход");
-                Thread.Sleep(50);
-                Suspense.WaitOne();
+                //Serial.Write(RETURN_OUTPUT);
+                //Thread.Sleep(50);
+                //textBoxGetV?.Invoke((Action)(() =>
+                //{
+                //    textBoxGetV.Text = Serial.Read();
+                //}));
+                //Thread.Sleep(50);
+                //Suspense.WaitOne();
             }
-        }
-
-        private void buttonOutput_Click(object sender, EventArgs e)
-        {
-            RunTask = Task.Run(() => OutputSwitch());
         }
 
         void OutputSwitch()
         {
             Suspense.Reset();// приостановка петли измерений значений, для отправки команды в прибор
-            Serial.Write(RETURN_OUTPUT);
-            Thread.Sleep(50);
-            Serial.Read();
-            Thread.Sleep(50);
-            //if ()
-            //{
-            //    Serial.Write(OUTPUT_OFF);
-            //}
-            //else if ()
-            //{
-            //    Serial.Write(OUTPUT_ON);
-            //}
+            if (Serial.IsReady)
+            {
+                Thread.Sleep(150);
+                var output = Serial.Write(RETURN_OUTPUT, true);
+
+                if (output == "1\n")
+                {
+                    Serial.Write(OUTPUT_OFF);
+                }
+                else if (output == "0\n")
+                {
+                    Serial.Write(OUTPUT_ON);
+                }
+                
+            }
             Suspense.Set();//продолить петлю измерений значений
         }
 
@@ -96,8 +110,11 @@ namespace ComPortTestForm
 
         void SetValues()
         {
-            Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
-            Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
+            if (Serial.IsReady)
+            {
+                Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
+                Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
+            }
         }
         void RefreshValues(string value)
         {
@@ -129,8 +146,8 @@ namespace ComPortTestForm
             Number = number;
             BaudRate = baudRate;
             Parity = parity;
-        }
 
+        }
 
         public void Open()
         {
@@ -149,41 +166,44 @@ namespace ComPortTestForm
             }
         }
 
-        public void Write(string message)
+
+
+        public string Write(string message, bool cmd = false)
         {
+            IsReady = false;
             Open();
             const string END_OF_LINE = "\r\n";
             try
             {
                 var dataBytes = Encoding.UTF8.GetBytes(message + END_OF_LINE);
                 Serial.Write(dataBytes);
+                if (cmd)
+                {
+                    Thread.Sleep(200);
+                    IsReady = true;
+                    return Read();
+                }
+                IsReady = true;
+                return null;
             }
             catch (Exception exception)
             {
-                throw exception;
+                throw;
             }
         }
 
-        /// <summary>
-        /// чтение из компорта
-        /// </summary>
-        /// <param name="cmd">передача команды в ответе для идентификации</param>
-        /// <param name="cmdRequsetCmd"></param>
-        /// <param name="command"></param>
-        public string Read(string command = null)
+        public bool IsReady { get; set; }
+
+        public string Read()
         {
-            string buffer = null;
             try
             {
-                Serial.UseDataReceived(flag, (port, bytes) =>
-                {
-                    buffer = Encoding.UTF8.GetString(bytes);
-                });
-                return buffer;
+                var dataBytes = Encoding.UTF8.GetString(Serial.Read());
+                return dataBytes;
             }
             catch (Exception exception)
             {
-                throw exception;
+                throw;
             }
         }
 
@@ -205,11 +225,6 @@ namespace ComPortTestForm
         }
 
 
-        static string RemoveUnnecessary(string message)//удаление мусора для строки ответа
-        {
-            var unnecessary = new[] { '?', '\n', '\r' };
-            return String.Join("", message.Where((ch) => !unnecessary.Contains(ch)));
-        }
 
     }
 
