@@ -30,25 +30,19 @@ namespace ComPortTestForm
             Serial.Write(OUTPUT_OFF);
         }
 
-        private Thread thr;
-
         private void buttonSetValue_Click(object sender, EventArgs e)
         {
-            thr = new Thread(SetValues);
-            thr.Start();
+            RunTask = Task.Run(() => SetValues());
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
         {
-            thr = new Thread(WorkRepeat);
-            thr.Start();
-
+            RunTask = Task.Run(() => WorkRepeat());
         }
 
         private void buttonOutput_Click(object sender, EventArgs e)
         {
-            thr = new Thread(OutputSwitch);
-            thr.Start();
+            RunTask = Task.Run(() => OutputSwitch());
         }
 
         private void WorkRepeat()
@@ -56,52 +50,62 @@ namespace ComPortTestForm
             while (true)
             {
                 Serial.Write(RETURN_SET_CURRENT);
-                Thread.Sleep(150);
+                Thread.Sleep(300);
                 var curr = Serial.Read();
-                Suspense.WaitOne();
                 textBoxGetA?.Invoke((Action)(() =>
                 {
-                    textBoxGetA.Text = curr;
+                    textBoxGetA.Text = curr.Result;
                 }));
+                Suspense.WaitOne();
 
                 Serial.Write(RETURN_SET_VOLTAGE);
-                Thread.Sleep(150);
+                Thread.Sleep(300);
                 var volt = Serial.Read();
-                Suspense.WaitOne();
                 textBoxGetV?.Invoke((Action)(() =>
                 {
-                    textBoxGetV.Text = volt;
+                    textBoxGetV.Text = volt.Result;
                 }));
+                Suspense.WaitOne();
 
+                Serial.Write(RETURN_OUTPUT);
+                Thread.Sleep(300);
+                var output = Serial.Read();
+                textBoxGetV?.Invoke((Action)(() =>
+                {
+                    button1.BackColor = ChangeColor(output);
+                }));
+                Suspense.WaitOne();
+            }
+        }
 
-                //Serial.Write(RETURN_OUTPUT);
-                //Thread.Sleep(50);
-                //textBoxGetV?.Invoke((Action)(() =>
-                //{
-                //    textBoxGetV.Text = Serial.Read();
-                //}));
-                //Thread.Sleep(50);
-                //Suspense.WaitOne();
+        Color ChangeColor(Task<string> output)
+        {
+            if (output.Result == "1\n")
+            {
+                return Color.Green;
+            }
+            else
+            {
+                return Color.Red;
             }
         }
 
         void OutputSwitch()
         {
             Suspense.Reset();// приостановка петли измерений значений, для отправки команды в прибор
-            if (Serial.IsReady)
+
+            Serial.Write(RETURN_OUTPUT, true);
+            var resieve = Serial.Read();
+            Thread.Sleep(300);
+            if (resieve.Result == "1\n")
             {
-                var output = Serial.Write(RETURN_OUTPUT, true);
-
-                if (output == "1\n")
-                {
-                    Serial.Write(OUTPUT_OFF);
-                }
-                else if (output == "0\n")
-                {
-                    Serial.Write(OUTPUT_ON);
-                }
-
+                Serial.Write(OUTPUT_OFF);
             }
+            else if (resieve.Result == "0\n")
+            {
+                Serial.Write(OUTPUT_ON);
+            }
+
             Suspense.Set();//продолить петлю измерений значений
         }
 
@@ -109,11 +113,9 @@ namespace ComPortTestForm
 
         void SetValues()
         {
-            if (Serial.IsReady)
-            {
-                Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
-                Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
-            }
+            Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
+            Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
+
         }
         void RefreshValues(string value)
         {
@@ -167,23 +169,14 @@ namespace ComPortTestForm
 
 
 
-        public string Write(string message, bool cmd = false)
+        public void Write(string message, bool cmd = false)
         {
-            IsReady = false;
             Open();
             const string END_OF_LINE = "\r\n";
             try
             {
                 var dataBytes = Encoding.UTF8.GetBytes(message + END_OF_LINE);
                 Serial.Write(dataBytes);
-                if (cmd)
-                {
-                    Thread.Sleep(100);
-                    IsReady = true;
-                    return Read();
-                }
-                IsReady = true;
-                return null;
             }
             catch (Exception exception)
             {
@@ -191,9 +184,7 @@ namespace ComPortTestForm
             }
         }
 
-        public bool IsReady { get; set; }
-
-        public string Read()
+        public async Task<string> Read()
         {
             try
             {
