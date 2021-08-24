@@ -20,7 +20,7 @@ namespace ComPortTestForm
     {
         MySerialPort Serial = new MySerialPort(4, 9600, 0);
         private Task RunTask;//рабочий поток
-        
+
         protected ManualResetEvent Suspense = new ManualResetEvent(true);//для приостановки петли измерений значений
         public Form1()
         {
@@ -42,7 +42,7 @@ namespace ComPortTestForm
         {
             thr = new Thread(WorkRepeat);
             thr.Start();
-           
+
         }
 
         private void buttonOutput_Click(object sender, EventArgs e)
@@ -63,7 +63,7 @@ namespace ComPortTestForm
                 {
                     textBoxGetA.Text = curr;
                 }));
-                
+
                 Serial.Write(RETURN_SET_VOLTAGE);
                 Thread.Sleep(150);
                 var volt = Serial.Read();
@@ -72,7 +72,7 @@ namespace ComPortTestForm
                 {
                     textBoxGetV.Text = volt;
                 }));
-                
+
 
                 //Serial.Write(RETURN_OUTPUT);
                 //Thread.Sleep(50);
@@ -90,7 +90,6 @@ namespace ComPortTestForm
             Suspense.Reset();// приостановка петли измерений значений, для отправки команды в прибор
             if (Serial.IsReady)
             {
-                Thread.Sleep(150);
                 var output = Serial.Write(RETURN_OUTPUT, true);
 
                 if (output == "1\n")
@@ -101,7 +100,7 @@ namespace ComPortTestForm
                 {
                     Serial.Write(OUTPUT_ON);
                 }
-                
+
             }
             Suspense.Set();//продолить петлю измерений значений
         }
@@ -179,7 +178,7 @@ namespace ComPortTestForm
                 Serial.Write(dataBytes);
                 if (cmd)
                 {
-                    Thread.Sleep(200);
+                    Thread.Sleep(100);
                     IsReady = true;
                     return Read();
                 }
