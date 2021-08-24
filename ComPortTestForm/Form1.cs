@@ -23,8 +23,11 @@ namespace ComPortTestForm
         {
             InitializeComponent();
             Serial.DataReceived += RefreshValues;
+           // Serial.CommandReceived += CommandReceived;
             Serial.Write(OUTPUT_OFF);
         }
+
+
 
         private void buttonSetValue_Click(object sender, EventArgs e)
         {
@@ -42,25 +45,25 @@ namespace ComPortTestForm
             {
                 Serial.Write(RETURN_SET_CURRENT);
                 Thread.Sleep(50);
-                Serial.Read("ток");
+                textBoxGetA?.Invoke((Action)(() =>
+                {
+                    textBoxGetA.Text = Serial.Read("ток");
+                }));
                 Thread.Sleep(50);
                 Suspense.WaitOne();
 
                 Serial.Write(RETURN_SET_VOLTAGE);
                 Thread.Sleep(50);
-                Serial.Read("напряжение");
+                textBoxGetV?.Invoke((Action)(() =>
+                {
+                    textBoxGetV.Text = Serial.Read("напряжение");
+                }));
                 Thread.Sleep(50);
                 Suspense.WaitOne();
 
                 Serial.Write(RETURN_OUTPUT);
                 Thread.Sleep(50);
                 Serial.Read("выход");
-                Thread.Sleep(50);
-                Suspense.WaitOne();
-
-                Serial.Write("* IDN?");
-                Thread.Sleep(50);
-                Serial.Read("ответ");
                 Thread.Sleep(50);
                 Suspense.WaitOne();
             }
@@ -78,31 +81,33 @@ namespace ComPortTestForm
             Thread.Sleep(50);
             Serial.Read();
             Thread.Sleep(50);
-            if (Response =="1")
-            {
-                Serial.Write(OUTPUT_OFF);
-            }
-            else if (Response == "0")
-            {
-                Serial.Write(OUTPUT_ON);
-            }
+            //if ()
+            //{
+            //    Serial.Write(OUTPUT_OFF);
+            //}
+            //else if ()
+            //{
+            //    Serial.Write(OUTPUT_ON);
+            //}
             Suspense.Set();//продолить петлю измерений значений
         }
 
-        private bool OutputEnable = false;
 
-        void RefreshValues(string value)
-        {
-            Debug.Write(value);
-            Response = value;
-        }
-
-        private string Response;
 
         void SetValues()
         {
             Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
             Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
+        }
+        void RefreshValues(string value)
+        {
+            Debug.Write(value);
+        }
+
+        private string CommandReceived()
+        {
+            string command = null;
+            return command;
         }
     }
 
@@ -114,6 +119,7 @@ namespace ComPortTestForm
         private GodSerialPort Serial;
 
         public Action<string> DataReceived;
+        public Func<string, string> CommandReceived;
         public event Action<Exception> ReceiveErrorMessage;//вывод исключений
 
         public bool flag;
@@ -164,15 +170,16 @@ namespace ComPortTestForm
         /// <param name="cmd">передача команды в ответе для идентификации</param>
         /// <param name="cmdRequsetCmd"></param>
         /// <param name="command"></param>
-        public void Read(string command = null)
+        public string Read(string command = null)
         {
+            string buffer = null;
             try
             {
                 Serial.UseDataReceived(flag, (port, bytes) =>
                 {
-                    string buffer = Encoding.UTF8.GetString(bytes);
-                    DataReceived?.Invoke(command + " " + buffer);
+                    buffer = Encoding.UTF8.GetString(bytes);
                 });
+                return buffer;
             }
             catch (Exception exception)
             {
