@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using GodSharp.SerialPort;
+using GodSharp.SerialPort.Enums;
 using static ComPortTestForm.CommandsSupplyPSH;
 
 namespace ComPortTestForm
@@ -19,114 +20,142 @@ namespace ComPortTestForm
     public partial class Form1 : Form
     {
         MySerialPort Serial = new MySerialPort(4, 9600, 0);
-        private Task RunTask;//рабочий поток
 
+        private static Mutex mut = new Mutex();
         protected ManualResetEvent Suspense = new ManualResetEvent(true);//для приостановки петли измерений значений
+        protected ManualResetEvent WaitSuspenseThread = new ManualResetEvent(true);
+
         public Form1()
         {
             InitializeComponent();
-            Serial.DataReceived += RefreshValues;
-            // Serial.CommandReceived += CommandReceived;
+            Serial.Open();
             Serial.Write(OUTPUT_OFF);
         }
 
-        private void buttonSetValue_Click(object sender, EventArgs e)
+        private async void buttonSetValue_Click(object sender, EventArgs e)
         {
-            RunTask = Task.Run(() => SetValues());
+            ((Button) sender).Enabled = false;
+            await Task.Run(SetValues);
+            ((Button)sender).Enabled = true;
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
         {
-            RunTask = Task.Run(() => WorkRepeat());
+            Task.Run(() => WorkRepeat());
         }
 
-        private void buttonOutput_Click(object sender, EventArgs e)
+        private async void buttonOutput_Click(object sender, EventArgs e)
         {
-            RunTask = Task.Run(() => OutputSwitch());
+            ((Button)sender).Enabled = false;
+            await Task.Run(OutputSwitch);
+            ((Button)sender).Enabled = true;
         }
 
         private void WorkRepeat()
         {
             while (true)
             {
-                Serial.Write(RETURN_SET_CURRENT);
-                Thread.Sleep(300);
-                var curr = Serial.Read();
-                textBoxGetA?.Invoke((Action)(() =>
-                {
-                    textBoxGetA.Text = curr.Result;
-                }));
-                Suspense.WaitOne();
 
-                Serial.Write(RETURN_SET_VOLTAGE);
-                Thread.Sleep(300);
-                var volt = Serial.Read();
-                textBoxGetV?.Invoke((Action)(() =>
+                //
+                //
                 {
-                    textBoxGetV.Text = volt.Result;
-                }));
-                Suspense.WaitOne();
+                    Serial.Write(RETURN_OUTPUT);
+                    Thread.Sleep(200);//300
 
-                Serial.Write(RETURN_OUTPUT);
-                Thread.Sleep(300);
-                var output = Serial.Read();
-                textBoxGetV?.Invoke((Action)(() =>
+                    //
+                    var output = Serial.Read();
+                    textBoxGetV?.Invoke((Action)(() => button1.BackColor = ChangeColor(output)));
+                    //Suspense.WaitOne();
+                }
+                
+                //
+                //
                 {
-                    button1.BackColor = ChangeColor(output);
-                }));
+                    Serial.Write(RETURN_SET_VOLTAGE);
+                    Thread.Sleep(200);
+
+                    //
+                    var value = Serial.Read();
+                    textBoxGetV?.Invoke((Action) (() => textBoxGetV.Text = value));
+                    //Suspense.WaitOne();
+                }
+
+                //
+                //
+                {
+                    Serial.Write(RETURN_SET_CURRENT);
+                    Thread.Sleep(200);
+
+                    //
+                    var value = Serial.Read();
+                    textBoxGetA?.Invoke((Action)(() => textBoxGetA.Text = value));
+
+                }
+
+
+                WaitSuspenseThread.Set();
+                Debug.WriteLine("loop wait");
                 Suspense.WaitOne();
+                Debug.WriteLine("loop continue");
+                WaitSuspenseThread.Reset();
+
             }
         }
 
-        Color ChangeColor(Task<string> output)
+        Color ChangeColor(string output)
         {
-            if (output.Result == "1\n")
-            {
-                return Color.Green;
-            }
-            else
-            {
-                return Color.Red;
-            }
+            return output == "1\n" ? Color.Green : Color.Red;
         }
 
         void OutputSwitch()
         {
-            Suspense.Reset();// приостановка петли измерений значений, для отправки команды в прибор
+            mut.WaitOne();
 
-            Serial.Write(RETURN_OUTPUT, true);
-            var resieve = Serial.Read();
-            Thread.Sleep(300);
-            if (resieve.Result == "1\n")
+            Debug.WriteLine("OutputSwitch start");
+            Suspense.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
+            WaitSuspenseThread.WaitOne();
+            Debug.WriteLine("OutputSwitch continue");
+
+            Serial.Write(RETURN_OUTPUT);
+            Thread.Sleep(100);
+
+            var result = Serial.Read();
+            
+            if (result == "1\n")
             {
                 Serial.Write(OUTPUT_OFF);
             }
-            else if (resieve.Result == "0\n")
+            else if (result == "0\n")
             {
                 Serial.Write(OUTPUT_ON);
             }
 
+            Debug.WriteLine("OutputSwitch end");
             Suspense.Set();//продолить петлю измерений значений
+
+            mut.ReleaseMutex();
         }
 
 
 
         void SetValues()
         {
+            mut.WaitOne();
+
+            Debug.WriteLine("SetValues start");
+            Suspense.Reset();
+            WaitSuspenseThread.WaitOne();
+            Debug.WriteLine("SetValues continue");
+            
             Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
             Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
 
-        }
-        void RefreshValues(string value)
-        {
-            Debug.Write(value);
+            Debug.WriteLine("SetValues end");
+            Suspense.Set();//продолить петлю измерений значений
+
+            mut.ReleaseMutex();
         }
 
-        private string CommandReceived()
-        {
-            string command = null;
-            return command;
-        }
     }
 
     public class MySerialPort
@@ -138,7 +167,7 @@ namespace ComPortTestForm
 
         public Action<string> DataReceived;
         public Func<string, string> CommandReceived;
-        public event Action<Exception> ReceiveErrorMessage;//вывод исключений
+        public event Action<Exception> ReceiveErrorMessage; //вывод исключений
 
         public bool flag;
 
@@ -154,47 +183,32 @@ namespace ComPortTestForm
         {
             if (Serial == null || !Serial.IsOpen)
             {
-                try
-                {
-                    Serial = new GodSerialPort($"COM{Number}", BaudRate, Parity);
-                    Serial.Open();
-                    flag = true;
-                }
-                catch (Exception exception)
-                {
-                    throw exception;
-                }
+
+                Serial = new GodSerialPort($"COM{Number}", BaudRate, Parity);
+                Serial.DataFormat = SerialPortDataFormat.Char;
+                Serial.Open();
+
             }
         }
 
 
 
-        public void Write(string message, bool cmd = false)
+        public void Write(string message)
         {
-            Open();
             const string END_OF_LINE = "\r\n";
-            try
-            {
-                var dataBytes = Encoding.UTF8.GetBytes(message + END_OF_LINE);
-                Serial.Write(dataBytes);
-            }
-            catch (Exception exception)
-            {
-                throw;
-            }
+
+            var dataBytes = Encoding.UTF8.GetBytes(message + END_OF_LINE);
+            Serial.Write(dataBytes);
+            //Serial.WriteAsciiString(message + END_OF_LINE);
+
         }
 
-        public async Task<string> Read()
+        public string Read()
         {
-            try
-            {
-                var dataBytes = Encoding.UTF8.GetString(Serial.Read());
-                return dataBytes;
-            }
-            catch (Exception exception)
-            {
-                throw;
-            }
+             return Serial.ReadString();
+            //var dataBytes = Encoding.UTF8.GetString(Serial.Read());
+            //return dataBytes;
+
         }
 
         public void Close()
@@ -210,6 +224,7 @@ namespace ComPortTestForm
                 catch (Exception exception)
                 {
                     ReceiveErrorMessage?.Invoke(exception);
+                    throw;
                 }
             }
         }

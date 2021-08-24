@@ -131,9 +131,9 @@ namespace ComPortTestForm
             // 
             // buttonRefresh
             // 
-            this.buttonRefresh.Location = new System.Drawing.Point(87, 91);
+            this.buttonRefresh.Location = new System.Drawing.Point(92, 6);
             this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(53, 23);
+            this.buttonRefresh.Size = new System.Drawing.Size(20, 20);
             this.buttonRefresh.TabIndex = 10;
             this.buttonRefresh.Text = "обновление";
             this.buttonRefresh.UseVisualStyleBackColor = true;
