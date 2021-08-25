@@ -66,16 +66,18 @@ namespace ComPortTestForm
 
         private void WorkRepeat()
         {
+            var unnecessary = new[] { '?', '\n', '\r','+' };
+
             while (true)
             {
                 //
                 //
                 {
                     SerialSupply.Write(RETURN_OUTPUT);
-                    Thread.Sleep(50);//300
+                    Thread.Sleep(50);
                     //
-                    var output = SerialSupply.Read();
-                    textBoxGetV?.Invoke((Action)(() => button1.BackColor = ChangeColor(output)));
+                    var value = SerialSupply.Read();
+                    textBoxGetV?.Invoke((Action)(() => button1.BackColor = ChangeColor(value)));
                 }
                 //
                 //
@@ -84,7 +86,8 @@ namespace ComPortTestForm
                     Thread.Sleep(50);
                     //
                     var value = SerialSupply.Read();
-                    textBoxGetV?.Invoke((Action)(() => textBoxGetV.Text = value));
+                    var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
+                    textBoxGetV?.Invoke((Action)(() => textBoxGetV.Text = temp));
                 }
                 //
                 //
@@ -93,7 +96,8 @@ namespace ComPortTestForm
                     Thread.Sleep(50);
                     //
                     var value = SerialSupply.Read();
-                    textBoxGetA?.Invoke((Action)(() => textBoxGetA.Text = value));
+                    var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
+                    textBoxGetA?.Invoke((Action)(() => textBoxGetA.Text = temp));
                 }
                 WaitSuspenseThread.Set();
                 //Debug.WriteLine("loop wait");
@@ -118,8 +122,7 @@ namespace ComPortTestForm
             SuspenseSupply.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
             WaitSuspenseThread.WaitOne();
             //Debug.WriteLine("OutputSwitch continue");
-            if (checkBoxOutputType.Checked)
-            {
+           
                 SerialSupply.Write(RETURN_OUTPUT);
                 Thread.Sleep(50);
 
@@ -133,27 +136,11 @@ namespace ComPortTestForm
                 {
                     SerialSupply.Write(OUTPUT_ON);
                 }
-            }
-
-            else if (!checkBoxOutputType.Checked)
-            {
-                outputOn = !outputOn;
-                if (outputOn)
-                {
-                    SerialSupply.Write(OUTPUT_OFF);
-                }
-                else if (!outputOn)
-                {
-                    SerialSupply.Write(OUTPUT_ON);
-                }
-            }
 
             //Debug.WriteLine("OutputSwitch end");
             SuspenseSupply.Set();//продолить петлю измерений значений
             mutSupply.ReleaseMutex();
         }
-
-
 
         void SetValues()
         {
