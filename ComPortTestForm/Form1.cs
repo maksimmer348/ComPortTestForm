@@ -19,29 +19,42 @@ namespace ComPortTestForm
 {
     public partial class Form1 : Form
     {
-        MySerialPort Serial = new MySerialPort(4, 9600, 0);
 
-        private static Mutex mut = new Mutex();
-        protected ManualResetEvent Suspense = new ManualResetEvent(true);//для приостановки петли измерений значений
-        protected ManualResetEvent WaitSuspenseThread = new ManualResetEvent(true);
 
         public Form1()
         {
             InitializeComponent();
-            Serial.Open();
-            Serial.Write(OUTPUT_OFF);
+            //
+            //
+            SerialSupply.Open();
+            SerialSupply.Write(OUTPUT_OFF);
+            Thr = Task.Run(() => WorkRepeat());
+            outputOn = false;
+            //
+            //
+
+
         }
+
+        #region Supply
+
+        MySerialPort SerialSupply = new MySerialPort(21, 57600, 0);
+        private static Mutex mutSupply = new Mutex();
+        private Task Thr;
+        private bool outputOn;
+        protected ManualResetEvent SuspenseSupply = new ManualResetEvent(true);//для приостановки петли измерений значений
+        protected ManualResetEvent WaitSuspenseThread = new ManualResetEvent(true);
 
         private async void buttonSetValue_Click(object sender, EventArgs e)
         {
-            ((Button) sender).Enabled = false;
+            ((Button)sender).Enabled = false;
             await Task.Run(SetValues);
             ((Button)sender).Enabled = true;
         }
 
         private void buttonRefresh_Click(object sender, EventArgs e)
         {
-            Task.Run(() => WorkRepeat());
+
         }
 
         private async void buttonOutput_Click(object sender, EventArgs e)
@@ -55,50 +68,40 @@ namespace ComPortTestForm
         {
             while (true)
             {
-
                 //
                 //
                 {
-                    Serial.Write(RETURN_OUTPUT);
-                    Thread.Sleep(200);//300
-
+                    SerialSupply.Write(RETURN_OUTPUT);
+                    Thread.Sleep(300);//300
                     //
-                    var output = Serial.Read();
+                    var output = SerialSupply.Read();
                     textBoxGetV?.Invoke((Action)(() => button1.BackColor = ChangeColor(output)));
-                    //Suspense.WaitOne();
                 }
-                
                 //
                 //
                 {
-                    Serial.Write(RETURN_SET_VOLTAGE);
-                    Thread.Sleep(200);
-
+                    SerialSupply.Write(RETURN_SET_VOLTAGE);
+                    Thread.Sleep(300);
                     //
-                    var value = Serial.Read();
-                    textBoxGetV?.Invoke((Action) (() => textBoxGetV.Text = value));
-                    //Suspense.WaitOne();
+                    var value = SerialSupply.Read();
+                    textBoxGetV?.Invoke((Action)(() => textBoxGetV.Text = value));
                 }
-
                 //
                 //
                 {
-                    Serial.Write(RETURN_SET_CURRENT);
-                    Thread.Sleep(200);
-
+                    SerialSupply.Write(RETURN_SET_CURRENT);
+                    Thread.Sleep(300);
                     //
-                    var value = Serial.Read();
+                    var value = SerialSupply.Read();
                     textBoxGetA?.Invoke((Action)(() => textBoxGetA.Text = value));
-
                 }
-
-
                 WaitSuspenseThread.Set();
-                Debug.WriteLine("loop wait");
-                Suspense.WaitOne();
-                Debug.WriteLine("loop continue");
+                //Debug.WriteLine("loop wait");
+                SuspenseSupply.WaitOne();
+                //Debug.WriteLine("loop continue");
                 WaitSuspenseThread.Reset();
-
+                //
+                //
             }
         }
 
@@ -109,52 +112,72 @@ namespace ComPortTestForm
 
         void OutputSwitch()
         {
-            mut.WaitOne();
+            mutSupply.WaitOne();
 
-            Debug.WriteLine("OutputSwitch start");
-            Suspense.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
+            //Debug.WriteLine("OutputSwitch start");
+            SuspenseSupply.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
             WaitSuspenseThread.WaitOne();
-            Debug.WriteLine("OutputSwitch continue");
-
-            Serial.Write(RETURN_OUTPUT);
-            Thread.Sleep(100);
-
-            var result = Serial.Read();
-            
-            if (result == "1\n")
+            //Debug.WriteLine("OutputSwitch continue");
+            if (checkBoxOutputType.Checked)
             {
-                Serial.Write(OUTPUT_OFF);
+                SerialSupply.Write(RETURN_OUTPUT);
+                Thread.Sleep(100);
+
+                var result = SerialSupply.Read();
+
+                if (result == "1\n")
+                {
+                    SerialSupply.Write(OUTPUT_OFF);
+                }
+                else if (result == "0\n")
+                {
+                    SerialSupply.Write(OUTPUT_ON);
+                }
             }
-            else if (result == "0\n")
+
+            else if (!checkBoxOutputType.Checked)
             {
-                Serial.Write(OUTPUT_ON);
+                outputOn = !outputOn;
+                if (outputOn)
+                {
+                    SerialSupply.Write(OUTPUT_OFF);
+                }
+                else if (!outputOn)
+                {
+                    SerialSupply.Write(OUTPUT_ON);
+                }
             }
 
-            Debug.WriteLine("OutputSwitch end");
-            Suspense.Set();//продолить петлю измерений значений
-
-            mut.ReleaseMutex();
+            //Debug.WriteLine("OutputSwitch end");
+            SuspenseSupply.Set();//продолить петлю измерений значений
+            mutSupply.ReleaseMutex();
         }
 
 
 
         void SetValues()
         {
-            mut.WaitOne();
+            mutSupply.WaitOne();
 
-            Debug.WriteLine("SetValues start");
-            Suspense.Reset();
+            //Debug.WriteLine("SetValues start");
+            SuspenseSupply.Reset();
             WaitSuspenseThread.WaitOne();
-            Debug.WriteLine("SetValues continue");
-            
-            Serial.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
-            Serial.Write(SET_CURRENT + " " + textBoxSetA.Text);
+            //Debug.WriteLine("SetValues continue");
 
-            Debug.WriteLine("SetValues end");
-            Suspense.Set();//продолить петлю измерений значений
+            SerialSupply.Write(SET_VOLTAGE + " " + textBoxSetV.Text);
+            SerialSupply.Write(SET_CURRENT + " " + textBoxSetA.Text);
 
-            mut.ReleaseMutex();
+            //Debug.WriteLine("SetValues end");
+            SuspenseSupply.Set();//продолить петлю измерений значений
+
+            mutSupply.ReleaseMutex();
         }
+        private void checkBoxOutputType_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+        #endregion
+
 
     }
 
@@ -190,9 +213,6 @@ namespace ComPortTestForm
 
             }
         }
-
-
-
         public void Write(string message)
         {
             const string END_OF_LINE = "\r\n";
@@ -205,7 +225,7 @@ namespace ComPortTestForm
 
         public string Read()
         {
-             return Serial.ReadString();
+            return Serial.ReadString();
             //var dataBytes = Encoding.UTF8.GetString(Serial.Read());
             //return dataBytes;
 
@@ -234,6 +254,20 @@ namespace ComPortTestForm
     }
 
     public static class CommandsSupplyPSH
+    {
+        public const string SET_VOLTAGE = ":chan1:volt ";
+        public const string RETURN_VOLTAGE = ":chan1:meas:volt ?";
+        public const string RETURN_SET_VOLTAGE = ":chan1:volt ?";
+
+        public const string SET_CURRENT = ":chan1: curr ";
+        public const string RETURN_CURRENT = ":chan1:meas:curr ?";
+        public const string RETURN_SET_CURRENT = ":chan1:curr ?";
+
+        public const string OUTPUT_ON = ":outp:stat 1";
+        public const string OUTPUT_OFF = ":outp:stat 0";
+        public const string RETURN_OUTPUT = ":outp:stat?";
+    }
+    public static class CommandsSupplyGw
     {
         public const string SET_VOLTAGE = ":chan1:volt ";
         public const string RETURN_VOLTAGE = ":chan1:meas:volt ?";

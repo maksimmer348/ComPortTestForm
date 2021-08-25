@@ -41,13 +41,14 @@ namespace ComPortTestForm
             this.buttonOutput = new System.Windows.Forms.Button();
             this.buttonRefresh = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
+            this.checkBoxOutputType = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // buttonSetValue
             // 
             this.buttonSetValue.Location = new System.Drawing.Point(12, 91);
             this.buttonSetValue.Name = "buttonSetValue";
-            this.buttonSetValue.Size = new System.Drawing.Size(51, 23);
+            this.buttonSetValue.Size = new System.Drawing.Size(100, 23);
             this.buttonSetValue.TabIndex = 0;
             this.buttonSetValue.Text = "установка";
             this.buttonSetValue.UseVisualStyleBackColor = true;
@@ -121,7 +122,7 @@ namespace ComPortTestForm
             // 
             // buttonOutput
             // 
-            this.buttonOutput.Location = new System.Drawing.Point(165, 90);
+            this.buttonOutput.Location = new System.Drawing.Point(118, 90);
             this.buttonOutput.Name = "buttonOutput";
             this.buttonOutput.Size = new System.Drawing.Size(53, 23);
             this.buttonOutput.TabIndex = 5;
@@ -142,18 +143,28 @@ namespace ComPortTestForm
             // button1
             // 
             this.button1.BackColor = System.Drawing.Color.Red;
-            this.button1.Location = new System.Drawing.Point(208, 90);
+            this.button1.Location = new System.Drawing.Point(177, 90);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(10, 23);
+            this.button1.Size = new System.Drawing.Size(23, 23);
             this.button1.TabIndex = 11;
-            this.button1.Text = "установка";
             this.button1.UseVisualStyleBackColor = false;
+            // 
+            // checkBoxOutputType
+            // 
+            this.checkBoxOutputType.AutoSize = true;
+            this.checkBoxOutputType.Location = new System.Drawing.Point(206, 95);
+            this.checkBoxOutputType.Name = "checkBoxOutputType";
+            this.checkBoxOutputType.Size = new System.Drawing.Size(15, 14);
+            this.checkBoxOutputType.TabIndex = 12;
+            this.checkBoxOutputType.UseVisualStyleBackColor = true;
+            this.checkBoxOutputType.CheckedChanged += new System.EventHandler(this.checkBoxOutputType_CheckedChanged);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(232, 126);
+            this.ClientSize = new System.Drawing.Size(381, 126);
+            this.Controls.Add(this.checkBoxOutputType);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.buttonRefresh);
             this.Controls.Add(this.label3);
@@ -187,6 +198,7 @@ namespace ComPortTestForm
         private System.Windows.Forms.Button buttonOutput;
         private System.Windows.Forms.Button buttonRefresh;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.CheckBox checkBoxOutputType;
     }
 }
 
