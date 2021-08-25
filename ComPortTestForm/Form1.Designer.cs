@@ -152,6 +152,8 @@ namespace ComPortTestForm
             // checkBoxOutputType
             // 
             this.checkBoxOutputType.AutoSize = true;
+            this.checkBoxOutputType.Checked = true;
+            this.checkBoxOutputType.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBoxOutputType.Location = new System.Drawing.Point(206, 95);
             this.checkBoxOutputType.Name = "checkBoxOutputType";
             this.checkBoxOutputType.Size = new System.Drawing.Size(15, 14);

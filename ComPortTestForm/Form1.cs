@@ -28,7 +28,7 @@ namespace ComPortTestForm
             //
             SerialSupply.Open();
             SerialSupply.Write(OUTPUT_OFF);
-            Thr = Task.Run(() => WorkRepeat());
+           
             outputOn = false;
             //
             //
@@ -54,7 +54,7 @@ namespace ComPortTestForm
 
         private void buttonRefresh_Click(object sender, EventArgs e)
         {
-
+            Thr = Task.Run(() => WorkRepeat());
         }
 
         private async void buttonOutput_Click(object sender, EventArgs e)
@@ -72,7 +72,7 @@ namespace ComPortTestForm
                 //
                 {
                     SerialSupply.Write(RETURN_OUTPUT);
-                    Thread.Sleep(300);//300
+                    Thread.Sleep(50);//300
                     //
                     var output = SerialSupply.Read();
                     textBoxGetV?.Invoke((Action)(() => button1.BackColor = ChangeColor(output)));
@@ -81,7 +81,7 @@ namespace ComPortTestForm
                 //
                 {
                     SerialSupply.Write(RETURN_SET_VOLTAGE);
-                    Thread.Sleep(300);
+                    Thread.Sleep(50);
                     //
                     var value = SerialSupply.Read();
                     textBoxGetV?.Invoke((Action)(() => textBoxGetV.Text = value));
@@ -90,7 +90,7 @@ namespace ComPortTestForm
                 //
                 {
                     SerialSupply.Write(RETURN_SET_CURRENT);
-                    Thread.Sleep(300);
+                    Thread.Sleep(50);
                     //
                     var value = SerialSupply.Read();
                     textBoxGetA?.Invoke((Action)(() => textBoxGetA.Text = value));
@@ -121,7 +121,7 @@ namespace ComPortTestForm
             if (checkBoxOutputType.Checked)
             {
                 SerialSupply.Write(RETURN_OUTPUT);
-                Thread.Sleep(100);
+                Thread.Sleep(50);
 
                 var result = SerialSupply.Read();
 
@@ -253,7 +253,7 @@ namespace ComPortTestForm
 
     }
 
-    public static class CommandsSupplyPSH
+    public static class CommandsSupplyGw //CommandsSupplyPSH
     {
         public const string SET_VOLTAGE = ":chan1:volt ";
         public const string RETURN_VOLTAGE = ":chan1:meas:volt ?";
@@ -267,18 +267,18 @@ namespace ComPortTestForm
         public const string OUTPUT_OFF = ":outp:stat 0";
         public const string RETURN_OUTPUT = ":outp:stat?";
     }
-    public static class CommandsSupplyGw
+    public static class CommandsSupplyPSH //CommandsSupplyGw
     {
-        public const string SET_VOLTAGE = ":chan1:volt ";
+        public const string SET_VOLTAGE = "SOUR:VOLT:LEV:IMM:AMPL ";
         public const string RETURN_VOLTAGE = ":chan1:meas:volt ?";
-        public const string RETURN_SET_VOLTAGE = ":chan1:volt ?";
+        public const string RETURN_SET_VOLTAGE = "SOUR:VOLT:LEV:IMM:AMPL?";
 
-        public const string SET_CURRENT = ":chan1: curr ";
+        public const string SET_CURRENT = "SOUR:CURR:LEV:IMM:AMPL ";
         public const string RETURN_CURRENT = ":chan1:meas:curr ?";
-        public const string RETURN_SET_CURRENT = ":chan1:curr ?";
+        public const string RETURN_SET_CURRENT = "SOUR:CURR:LEV:IMM:AMPL?";
 
-        public const string OUTPUT_ON = ":outp:stat 1";
-        public const string OUTPUT_OFF = ":outp:stat 0";
-        public const string RETURN_OUTPUT = ":outp:stat?";
+        public const string OUTPUT_ON = "OUTPut:STATe 1";
+        public const string OUTPUT_OFF = "OUTPut:STATe 0";
+        public const string RETURN_OUTPUT = "OUTPut:STATe?";
     }
 }
