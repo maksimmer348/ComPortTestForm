@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Remoting;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -16,13 +17,18 @@ using System.Windows.Forms;
 using GodSharp.SerialPort;
 using GodSharp.SerialPort.Enums;
 using static ComPortTestForm.CommandsSupplyPSH;
+using Timer = System.Windows.Forms.Timer;
 
 namespace ComPortTestForm
 {
     public partial class Form1 : Form
     {
+        #region Ctor & Init
 
-
+        //TODO добавить класс поиска( ComPort.Write("*IDN?");) и инициализации приборов по полученным id => GWInstek,GDM78341,GEP844336,1.03
+        //TODO 
+        //TODO
+        //TODO
         public Form1()
         {
             InitializeComponent();
@@ -30,7 +36,7 @@ namespace ComPortTestForm
             //
             SerialSupply.Open();
             SerialSupply.Write(OUTPUT_OFF);
-           
+
             //
             //
             //
@@ -40,22 +46,30 @@ namespace ComPortTestForm
             buttonStopMesaure.Enabled = false;
             //
             //
-            Task.Run(() =>  Start());
+            Task.Run(() => Start());
+            MyTimer.Tick += new EventHandler(TimerEventProcessor);
         }
         private void Form1_Load(object sender, System.EventArgs e)
         {
-           
+
         }
+
+        #endregion
+
+
         #region Supply
 
         MySerialPort SerialSupply = new MySerialPort(21, 57600, 0);
-        private static Mutex mutSupply = new Mutex();
+
+        private static Mutex mutSupply = new Mutex();//взаимное исключение потоков кнопок наличие эксклюзивного владельца, который и должен его освобождать 
         protected ManualResetEvent SuspenseSupply = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThread = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
 
-        void Start()
-        {
+        //TODO перенести и унифицировать все мтоды Regex.Matches в единый метод 
+        //TODO buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick())); заменить на вызов метода
 
+        void Start()//метод первичной инициализации
+        { 
             SerialSupply.Write(RETURN_SET_VOLTAGE);
             Thread.Sleep(50);
             numericUpDownSetV?.Invoke((Action)(() => numericUpDownSetV.Value =
@@ -71,24 +85,80 @@ namespace ComPortTestForm
             buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick()));
         }
 
-        private async void buttonSetValue_Click(object sender, EventArgs e)
+       
+        #region control buttons
+
+        private async void buttonSetValue_Click(object sender, EventArgs e)//установка занчений в блок питания(напряжение и ток)
         {
-            ((Button)sender).Enabled = false;
+            ((Button)sender).Enabled = false;//отключаем кнопку на время выполнения всех команд
             await Task.Run(SetValues);
             ((Button)sender).Enabled = true;
         }
-
-        private void buttonRefresh_Click(object sender, EventArgs e)
+        void SetValues()
         {
-            ((Button)sender).Enabled = false;
-            Task.Run(() => WorkRepeatSupply());
+
+            mutSupply.WaitOne();
+
+            //Debug.WriteLine("SetValues star,t");
+            SuspenseSupply.Reset();
+            WaitSuspenseThread.WaitOne();
+            //Debug.WriteLine("SetValues continue");
+
+            SerialSupply.Write(SET_VOLTAGE + " " + numericUpDownSetV.Text.Replace(",", "."));
+            SerialSupply.Write(SET_CURRENT + " " + numericUpDownSetA.Text.Replace(",", "."));
+            //Thread.Sleep(50);
+            //SerialSupply.Write(RETURN_OUTPUT);
+
+            //Debug.WriteLine("SetValues end");
+            SuspenseSupply.Set();//продолить петлю измерений значений
+
+            mutSupply.ReleaseMutex();
         }
+
 
         private async void buttonOutput_Click(object sender, EventArgs e)
         {
             ((Button)sender).Enabled = false;
             await Task.Run(OutputSwitch);
             ((Button)sender).Enabled = true;
+        }
+
+        void OutputSwitch()
+        {
+            mutSupply.WaitOne();
+
+            //Debug.WriteLine("OutputSwitch start");
+            SuspenseSupply.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
+            WaitSuspenseThread.WaitOne();
+            //Debug.WriteLine("OutputSwitch continue");
+
+            SerialSupply.Write(RETURN_OUTPUT);
+            Thread.Sleep(50);
+
+            var result = SerialSupply.Read();
+
+            if (result == "1\n")
+            {
+                SerialSupply.Write(OUTPUT_OFF);
+            }
+            else if (result == "0\n")
+            {
+                SerialSupply.Write(OUTPUT_ON);
+            }
+
+            //Debug.WriteLine("OutputSwitch end");
+            SuspenseSupply.Set();//продолить петлю измерений значений
+            mutSupply.ReleaseMutex();
+        }
+
+        #endregion
+
+        #region measurement loop 
+
+        private void buttonRefresh_Click(object sender, EventArgs e)//обновление значений
+        {
+            ((Button)sender).Enabled = false;//отключаем кнопку на время выполнения программы
+            Task.Run(WorkRepeatSupply);
         }
 
         private void WorkRepeatSupply()
@@ -136,57 +206,12 @@ namespace ComPortTestForm
             }
         }
 
-        Color ChangeColor(string output)
+        #endregion
+
+        #region view
+        Color ChangeColor(string output)//смена цвета для индикации output
         {
             return output == "1\n" ? Color.Green : Color.Red;
-        }
-
-        void OutputSwitch()
-        {
-            mutSupply.WaitOne();
-
-            //Debug.WriteLine("OutputSwitch start");
-            SuspenseSupply.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
-            WaitSuspenseThread.WaitOne();
-            //Debug.WriteLine("OutputSwitch continue");
-
-            SerialSupply.Write(RETURN_OUTPUT);
-            Thread.Sleep(50);
-
-            var result = SerialSupply.Read();
-
-            if (result == "1\n")
-            {
-                SerialSupply.Write(OUTPUT_OFF);
-            }
-            else if (result == "0\n")
-            {
-                SerialSupply.Write(OUTPUT_ON);
-            }
-
-            //Debug.WriteLine("OutputSwitch end");
-            SuspenseSupply.Set();//продолить петлю измерений значений
-            mutSupply.ReleaseMutex();
-        }
-
-        void SetValues()
-        {
-            mutSupply.WaitOne();
-
-            //Debug.WriteLine("SetValues star,t");
-            SuspenseSupply.Reset();
-            WaitSuspenseThread.WaitOne();
-            //Debug.WriteLine("SetValues continue");
-
-            SerialSupply.Write(SET_VOLTAGE + " " + numericUpDownSetV.Text.Replace(",", "."));
-            SerialSupply.Write(SET_CURRENT + " " + numericUpDownSetA.Text.Replace(",", "."));
-            //Thread.Sleep(50);
-            //SerialSupply.Write(RETURN_OUTPUT);
-
-            //Debug.WriteLine("SetValues end");
-            SuspenseSupply.Set();//продолить петлю измерений значений
-
-            mutSupply.ReleaseMutex();
         }
 
         void SwitchPrecisionModes()
@@ -208,50 +233,53 @@ namespace ComPortTestForm
             SwitchPrecisionModes();
         }
 
+        #endregion
 
         #endregion
 
-        #region meter
 
-        MySerialPort SerialMeterVolt  = new MySerialPort(22, 57600, 0);
-        MySerialPort SerialMeterCurr =new MySerialPort(19, 57600, 0); 
-        CancellationToken token;
+        #region Meter
 
-        private CancellationTokenSource source;
-        //private static Mutex mutMeter = new Mutex();
+        MySerialPort SerialMeterVolt = new MySerialPort(22, 57600, 0);
+        MySerialPort SerialMeterCurr = new MySerialPort(19, 57600, 0);
 
+        CancellationToken token;//для остановки птели измерений
+        private CancellationTokenSource source;//для остановки птели измерений
+        //private static Mutex mutMeter = new Mutex();//во избежание пересения потоко кнопок
         protected ManualResetEvent SuspenseMeter = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThreadMeter = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
 
-        private void buttonStartMesaure_Click(object sender, EventArgs e)
+        #region measurement loop
+
+        private void buttonStartMesaure_Click(object sender, EventArgs e)//запуск петли измерений
         {
             source = new CancellationTokenSource();
-            buttonStartMesaure.Enabled = false;
-            buttonStopMesaure.Enabled = true;
-            token = source.Token;
+            ((Button)sender).Enabled = false;//отключаем эту кнопку
+            buttonStopMesaure.Enabled = true;//включаем кнопку остановки плеи измерений
+            token = source.Token;//для запуска петли
             Task.Run(() => WorkRepeatMeter(), token);
         }
-        private void buttonStopMesaure_Click(object sender, EventArgs e)
+        private void buttonStopMesaure_Click(object sender, EventArgs e)//отановка петли измерений
         {
-            buttonStartMesaure.Enabled = true;
-            buttonStopMesaure.Enabled = false;
-            source?.Cancel();
+            buttonStartMesaure.Enabled = true;//включаем кнопку запуска плеи измерений
+            ((Button)sender).Enabled = false;//отключаем эту кнопку
+            source?.Cancel();//останавлиаем петли имзерений (2)
         }
 
-
-
-
-        private void WorkRepeatMeter()
+        //TODO перенсти var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch))); отсюда обратно в компорт
+        //TODO  var unnecessary = new[] { '?', '\n', '\r', '+', 'E' }; отсюда обратно в компорт
+        //TODO Thread.Sleep(200); перенести и унифицировать например добавить в своййство write по умолчанию 50 мс
+        //TODO  textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetA.Text = temp)); создать метод 
+        private void WorkRepeatMeter()//петля измерений
         {
-            var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
+            var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };//шаблонудаляемых элементов из входной строки
 
-            while (!token.IsCancellationRequested)
+            while (!token.IsCancellationRequested)//для остановкеи петли измерений через кнопку (2)
             {
                 //
                 //
                 {
-
-                    SerialMeterVolt.Write(CommandsMeterGDM.RETURN_VOLTAGE);
+                    SerialMeterVolt.Write(CommandsMeterGDM.RETURN_VOLTAGE);//команда запрос напряжения с вольтметра
                     Thread.Sleep(200);
                     //
                     var value = SerialMeterVolt.Read();
@@ -261,7 +289,7 @@ namespace ComPortTestForm
                 //
                 //
                 {
-                    SerialMeterCurr.Write(CommandsMeterGDM.RETURN_CURRENT);
+                    SerialMeterCurr.Write(CommandsMeterGDM.RETURN_CURRENT);//команда запрос тока с амперметра
                     Thread.Sleep(200);
                     //
                     var value = SerialMeterCurr.Read();
@@ -270,25 +298,82 @@ namespace ComPortTestForm
                 }
                 //
                 //
-
-                WaitSuspenseThreadMeter.Set();
-
+                WaitSuspenseThreadMeter.Set();//команда выполнена можно отпускать поток там(1)
                 //Debug.WriteLine("loop wait");
-
-                SuspenseMeter.WaitOne();
-
+                SuspenseMeter.WaitOne();//для оатсновки птели измерений кнопками
                 //Debug.WriteLine("loop continue");
-
-                WaitSuspenseThreadMeter.Reset();
-
+                WaitSuspenseThreadMeter.Reset();//начинаем петлю измерений блокуирем потоки кнопок до его отпуска в (1)
                 //
                 //
             }
         }
 
+        #endregion
+
+        # region measurement timer 
+
+        //TODO SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX); 
+        private void GetMinMaxValueMeter()
+        {
+            SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
+            SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
+            Thread.Sleep(50);
+            var resultVolt = SerialMeterVolt.Read();
+            var resultCurr = SerialMeterCurr.Read();
+            clock.Stop();
+            var unnecessary = new[] { '?', '\n', '\r', '+' };
+            var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
+            var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
+
+            textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMaxV.Text = tempV));
+            textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMaxA.Text = tempC));
+            SuspenseMeter.Set();//продолить петлю измерений значений
+            MyTimer.Stop();
+            Debug.WriteLine($"timer stop {clock.Elapsed}");
+        }
+
+        #region Timer
+
+        public static Timer MyTimer = new Timer();//таймер для переодичского чания измерений
+        Stopwatch clock = new Stopwatch();//отладочный секундомер
+
+        void SetTimer(decimal h, decimal m, decimal s)
+        {
+            var ss = new TimeSpan((int)h, (int)m, (int)s);
+            var ff = ss.TotalMilliseconds - 200;//задержка на отправк и принятие команд
+            MyTimer.Interval = (int)ff;
+            MyTimer.Start();
+        }
+
+        private void TimerEventProcessor(object sender, EventArgs e)//собтие вызваемое при тике таймера
+        {
+            Task.Run(GetMinMaxValueMeter);
+        }
+
+
+        private void buttonStartMesaureTimer_Click(object sender, EventArgs e)
+        {
+            clock.Start();
+            Debug.WriteLine("timer start");
+            SuspenseMeter.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
+            WaitSuspenseThreadMeter.WaitOne();
+            SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+            SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+            Thread.Sleep(50);
+            SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
+            SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
+            SuspenseMeter.Set();
+            SetTimer(numericUpDownSetMeterH.Value, numericUpDownSetMeterM.Value, numericUpDownSetMeterS.Value);
+
+        }
+
+        #endregion
+
+        #endregion
 
 
         #endregion
+
 
     }
 
@@ -358,9 +443,6 @@ namespace ComPortTestForm
                 }
             }
         }
-
-
-
     }
 
     public static class CommandsSupplyGw //CommandsSupplyPSH
@@ -399,7 +481,7 @@ namespace ComPortTestForm
 
         //public const string SET_CURRENT = "SOUR:CURR:LEV:IMM:AMPL ";
         //public const string SET_CURRENTE_RANGE = "SOUR:CURR:LEV:IMM:AMPL?";
-        public const string RETURN_CURRENT = "MEAS:CURR:DC? 10" ;
+        public const string RETURN_CURRENT = "MEAS:CURR:DC? 10";
 
         public const string SET_CALCULATE_MIN = "CALCulate:FUNCtion MIN";
         public const string GET_CALCULATE_MIN = "CALCulate:MINimum?";
@@ -408,8 +490,8 @@ namespace ComPortTestForm
         public const string GET_CALCULATE_MAX = "CALCulate:MAXimum?";
 
         public const string GET_CALCULATE_MODE = "CALCulate:FUNCtion?";
-        
+        public const string SET_CALCULATE_MODE_OFF = "CALCulate:FUNCtion OFF";
 
-        
+
     }
 }

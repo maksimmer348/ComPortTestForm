@@ -44,6 +44,21 @@ namespace ComPortTestForm
             this.numericUpDownSetA = new System.Windows.Forms.NumericUpDown();
             this.numericUpDownSetV = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.buttonStartMesaureTimer = new System.Windows.Forms.Button();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.lamel9 = new System.Windows.Forms.Label();
+            this.numericUpDownSetMeterS = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDownSetMeterM = new System.Windows.Forms.NumericUpDown();
+            this.numericUpDownSetMeterH = new System.Windows.Forms.NumericUpDown();
+            this.label9 = new System.Windows.Forms.Label();
+            this.textBoxMeterGetMaxV = new System.Windows.Forms.TextBox();
+            this.textBoxMeterGetMaxA = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.textBoxMeterGetMinV = new System.Windows.Forms.TextBox();
+            this.textBoxMeterGetMinA = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.buttonStopMesaure = new System.Windows.Forms.Button();
             this.buttonStartMesaure = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
@@ -54,29 +69,15 @@ namespace ComPortTestForm
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.comPortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.приборовToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.label7 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.label9 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.textBox4 = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown3 = new System.Windows.Forms.NumericUpDown();
-            this.lamel9 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetA)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetV)).BeginInit();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterS)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterM)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterH)).BeginInit();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonSetValue
@@ -234,19 +235,20 @@ namespace ComPortTestForm
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.buttonStartMesaureTimer);
             this.groupBox2.Controls.Add(this.label12);
             this.groupBox2.Controls.Add(this.label11);
             this.groupBox2.Controls.Add(this.lamel9);
-            this.groupBox2.Controls.Add(this.numericUpDown3);
-            this.groupBox2.Controls.Add(this.numericUpDown2);
-            this.groupBox2.Controls.Add(this.numericUpDown1);
+            this.groupBox2.Controls.Add(this.numericUpDownSetMeterS);
+            this.groupBox2.Controls.Add(this.numericUpDownSetMeterM);
+            this.groupBox2.Controls.Add(this.numericUpDownSetMeterH);
             this.groupBox2.Controls.Add(this.label9);
-            this.groupBox2.Controls.Add(this.textBox3);
-            this.groupBox2.Controls.Add(this.textBox4);
+            this.groupBox2.Controls.Add(this.textBoxMeterGetMaxV);
+            this.groupBox2.Controls.Add(this.textBoxMeterGetMaxA);
             this.groupBox2.Controls.Add(this.label10);
             this.groupBox2.Controls.Add(this.label7);
-            this.groupBox2.Controls.Add(this.textBox1);
-            this.groupBox2.Controls.Add(this.textBox2);
+            this.groupBox2.Controls.Add(this.textBoxMeterGetMinV);
+            this.groupBox2.Controls.Add(this.textBoxMeterGetMinA);
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.buttonStopMesaure);
             this.groupBox2.Controls.Add(this.buttonStartMesaure);
@@ -261,10 +263,161 @@ namespace ComPortTestForm
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "groupBox2";
             // 
+            // buttonStartMesaureTimer
+            // 
+            this.buttonStartMesaureTimer.Location = new System.Drawing.Point(86, 129);
+            this.buttonStartMesaureTimer.Name = "buttonStartMesaureTimer";
+            this.buttonStartMesaureTimer.Size = new System.Drawing.Size(68, 22);
+            this.buttonStartMesaureTimer.TabIndex = 30;
+            this.buttonStartMesaureTimer.Text = "Timer ▶";
+            this.buttonStartMesaureTimer.UseVisualStyleBackColor = true;
+            this.buttonStartMesaureTimer.Click += new System.EventHandler(this.buttonStartMesaureTimer_Click);
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(219, 108);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(13, 13);
+            this.label12.TabIndex = 29;
+            this.label12.Text = "с";
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(143, 108);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(15, 13);
+            this.label11.TabIndex = 28;
+            this.label11.Text = "м";
+            // 
+            // lamel9
+            // 
+            this.lamel9.AutoSize = true;
+            this.lamel9.Location = new System.Drawing.Point(68, 108);
+            this.lamel9.Name = "lamel9";
+            this.lamel9.Size = new System.Drawing.Size(12, 13);
+            this.lamel9.TabIndex = 27;
+            this.lamel9.Text = "ч";
+            // 
+            // numericUpDownSetMeterS
+            // 
+            this.numericUpDownSetMeterS.Location = new System.Drawing.Point(160, 104);
+            this.numericUpDownSetMeterS.Maximum = new decimal(new int[] {
+            59,
+            0,
+            0,
+            0});
+            this.numericUpDownSetMeterS.Minimum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericUpDownSetMeterS.Name = "numericUpDownSetMeterS";
+            this.numericUpDownSetMeterS.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterS.TabIndex = 26;
+            this.numericUpDownSetMeterS.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            // 
+            // numericUpDownSetMeterM
+            // 
+            this.numericUpDownSetMeterM.Location = new System.Drawing.Point(83, 104);
+            this.numericUpDownSetMeterM.Maximum = new decimal(new int[] {
+            59,
+            0,
+            0,
+            0});
+            this.numericUpDownSetMeterM.Name = "numericUpDownSetMeterM";
+            this.numericUpDownSetMeterM.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterM.TabIndex = 25;
+            // 
+            // numericUpDownSetMeterH
+            // 
+            this.numericUpDownSetMeterH.Location = new System.Drawing.Point(9, 104);
+            this.numericUpDownSetMeterH.Maximum = new decimal(new int[] {
+            23,
+            0,
+            0,
+            0});
+            this.numericUpDownSetMeterH.Name = "numericUpDownSetMeterH";
+            this.numericUpDownSetMeterH.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterH.TabIndex = 20;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(160, 57);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(36, 13);
+            this.label9.TabIndex = 24;
+            this.label9.Text = "max A";
+            // 
+            // textBoxMeterGetMaxV
+            // 
+            this.textBoxMeterGetMaxV.Location = new System.Drawing.Point(160, 34);
+            this.textBoxMeterGetMaxV.Name = "textBoxMeterGetMaxV";
+            this.textBoxMeterGetMaxV.ReadOnly = true;
+            this.textBoxMeterGetMaxV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMaxV.TabIndex = 21;
+            // 
+            // textBoxMeterGetMaxA
+            // 
+            this.textBoxMeterGetMaxA.Location = new System.Drawing.Point(160, 74);
+            this.textBoxMeterGetMaxA.Name = "textBoxMeterGetMaxA";
+            this.textBoxMeterGetMaxA.ReadOnly = true;
+            this.textBoxMeterGetMaxA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMaxA.TabIndex = 23;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(160, 18);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(36, 13);
+            this.label10.TabIndex = 22;
+            this.label10.Text = "max V";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(83, 57);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(33, 13);
+            this.label7.TabIndex = 20;
+            this.label7.Text = "min A";
+            // 
+            // textBoxMeterGetMinV
+            // 
+            this.textBoxMeterGetMinV.Location = new System.Drawing.Point(83, 34);
+            this.textBoxMeterGetMinV.Name = "textBoxMeterGetMinV";
+            this.textBoxMeterGetMinV.ReadOnly = true;
+            this.textBoxMeterGetMinV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMinV.TabIndex = 17;
+            // 
+            // textBoxMeterGetMinA
+            // 
+            this.textBoxMeterGetMinA.Location = new System.Drawing.Point(83, 74);
+            this.textBoxMeterGetMinA.Name = "textBoxMeterGetMinA";
+            this.textBoxMeterGetMinA.ReadOnly = true;
+            this.textBoxMeterGetMinA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMinA.TabIndex = 19;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(83, 18);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(33, 13);
+            this.label8.TabIndex = 18;
+            this.label8.Text = "min V";
+            // 
             // buttonStopMesaure
             // 
             this.buttonStopMesaure.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.25F);
-            this.buttonStopMesaure.Location = new System.Drawing.Point(48, 99);
+            this.buttonStopMesaure.Location = new System.Drawing.Point(51, 129);
             this.buttonStopMesaure.Name = "buttonStopMesaure";
             this.buttonStopMesaure.Size = new System.Drawing.Size(29, 22);
             this.buttonStopMesaure.TabIndex = 16;
@@ -274,7 +427,7 @@ namespace ComPortTestForm
             // 
             // buttonStartMesaure
             // 
-            this.buttonStartMesaure.Location = new System.Drawing.Point(6, 100);
+            this.buttonStartMesaure.Location = new System.Drawing.Point(9, 130);
             this.buttonStartMesaure.Name = "buttonStartMesaure";
             this.buttonStartMesaure.Size = new System.Drawing.Size(36, 22);
             this.buttonStartMesaure.TabIndex = 12;
@@ -347,142 +500,11 @@ namespace ComPortTestForm
             this.приборовToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.приборовToolStripMenuItem.Text = "приборов";
             // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(83, 57);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(33, 13);
-            this.label7.TabIndex = 20;
-            this.label7.Text = "min A";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(83, 34);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(71, 20);
-            this.textBox1.TabIndex = 17;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(83, 74);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(71, 20);
-            this.textBox2.TabIndex = 19;
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(83, 18);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(33, 13);
-            this.label8.TabIndex = 18;
-            this.label8.Text = "min V";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(160, 57);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(36, 13);
-            this.label9.TabIndex = 24;
-            this.label9.Text = "max A";
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(160, 34);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.ReadOnly = true;
-            this.textBox3.Size = new System.Drawing.Size(71, 20);
-            this.textBox3.TabIndex = 21;
-            // 
-            // textBox4
-            // 
-            this.textBox4.Location = new System.Drawing.Point(160, 74);
-            this.textBox4.Name = "textBox4";
-            this.textBox4.ReadOnly = true;
-            this.textBox4.Size = new System.Drawing.Size(71, 20);
-            this.textBox4.TabIndex = 23;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(160, 18);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(36, 13);
-            this.label10.TabIndex = 22;
-            this.label10.Text = "max V";
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(9, 129);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            23,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(53, 20);
-            this.numericUpDown1.TabIndex = 20;
-            // 
-            // numericUpDown2
-            // 
-            this.numericUpDown2.Location = new System.Drawing.Point(83, 129);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            59,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(53, 20);
-            this.numericUpDown2.TabIndex = 25;
-            // 
-            // numericUpDown3
-            // 
-            this.numericUpDown3.Location = new System.Drawing.Point(160, 129);
-            this.numericUpDown3.Maximum = new decimal(new int[] {
-            59,
-            0,
-            0,
-            0});
-            this.numericUpDown3.Name = "numericUpDown3";
-            this.numericUpDown3.Size = new System.Drawing.Size(53, 20);
-            this.numericUpDown3.TabIndex = 26;
-            // 
-            // lamel9
-            // 
-            this.lamel9.AutoSize = true;
-            this.lamel9.Location = new System.Drawing.Point(68, 133);
-            this.lamel9.Name = "lamel9";
-            this.lamel9.Size = new System.Drawing.Size(12, 13);
-            this.lamel9.TabIndex = 27;
-            this.lamel9.Text = "ч";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(143, 133);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(15, 13);
-            this.label11.TabIndex = 28;
-            this.label11.Text = "м";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(219, 133);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(13, 13);
-            this.label12.TabIndex = 29;
-            this.label12.Text = "с";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(450, 209);
+            this.ClientSize = new System.Drawing.Size(450, 204);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.menuStrip1);
@@ -498,11 +520,11 @@ namespace ComPortTestForm
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetV)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterS)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterM)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownSetMeterH)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -538,18 +560,19 @@ namespace ComPortTestForm
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label lamel9;
-        private System.Windows.Forms.NumericUpDown numericUpDown3;
-        private System.Windows.Forms.NumericUpDown numericUpDown2;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
+        private System.Windows.Forms.NumericUpDown numericUpDownSetMeterS;
+        private System.Windows.Forms.NumericUpDown numericUpDownSetMeterM;
+        private System.Windows.Forms.NumericUpDown numericUpDownSetMeterH;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.TextBox textBox4;
+        private System.Windows.Forms.TextBox textBoxMeterGetMaxV;
+        private System.Windows.Forms.TextBox textBoxMeterGetMaxA;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox textBoxMeterGetMinV;
+        private System.Windows.Forms.TextBox textBoxMeterGetMinA;
         private System.Windows.Forms.Label label8;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.Button buttonStartMesaureTimer;
     }
 }
 
