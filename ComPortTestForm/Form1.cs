@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Security.Cryptography;
 using System.Text;
@@ -47,7 +48,6 @@ namespace ComPortTestForm
             //
             //
             Task.Run(() => Start());
-            MyTimer.Tick += new EventHandler(TimerEventProcessor);
         }
         private void Form1_Load(object sender, System.EventArgs e)
         {
@@ -69,7 +69,7 @@ namespace ComPortTestForm
         //TODO buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick())); заменить на вызов метода
 
         void Start()//метод первичной инициализации
-        { 
+        {
             SerialSupply.Write(RETURN_SET_VOLTAGE);
             Thread.Sleep(50);
             numericUpDownSetV?.Invoke((Action)(() => numericUpDownSetV.Value =
@@ -85,7 +85,7 @@ namespace ComPortTestForm
             buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick()));
         }
 
-       
+
         #region control buttons
 
         private async void buttonSetValue_Click(object sender, EventArgs e)//установка занчений в блок питания(напряжение и ток)
@@ -243,27 +243,34 @@ namespace ComPortTestForm
         MySerialPort SerialMeterVolt = new MySerialPort(22, 57600, 0);
         MySerialPort SerialMeterCurr = new MySerialPort(19, 57600, 0);
 
-        CancellationToken token;//для остановки птели измерений
-        private CancellationTokenSource source;//для остановки птели измерений
-        //private static Mutex mutMeter = new Mutex();//во избежание пересения потоко кнопок
+        CancellationToken TokenLoopMeter;//для остановки птели измерений
+        private CancellationTokenSource SourceLoopMeter;//для остановки птели измерений
+
+        CancellationToken TokenMinMaxMeter;//для остановки птели измерений
+        private CancellationTokenSource SourceMinMaxMeter;//для остановки птели измерений
+
+        private static Mutex mutMeter = new Mutex();//во избежание пересения потоко кнопок
         protected ManualResetEvent SuspenseMeter = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThreadMeter = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
+        protected ManualResetEvent ThreadPause = new ManualResetEvent(false);
+
+       
 
         #region measurement loop
 
         private void buttonStartMesaure_Click(object sender, EventArgs e)//запуск петли измерений
         {
-            source = new CancellationTokenSource();
+            SourceLoopMeter = new CancellationTokenSource();
             ((Button)sender).Enabled = false;//отключаем эту кнопку
             buttonStopMesaure.Enabled = true;//включаем кнопку остановки плеи измерений
-            token = source.Token;//для запуска петли
-            Task.Run(() => WorkRepeatMeter(), token);
+            TokenLoopMeter = SourceLoopMeter.Token;//для запуска петли
+            Task.Run(() => WorkRepeatMeter(), TokenLoopMeter);
         }
         private void buttonStopMesaure_Click(object sender, EventArgs e)//отановка петли измерений
         {
             buttonStartMesaure.Enabled = true;//включаем кнопку запуска плеи измерений
             ((Button)sender).Enabled = false;//отключаем эту кнопку
-            source?.Cancel();//останавлиаем петли имзерений (2)
+            SourceLoopMeter?.Cancel();//останавлиаем петли имзерений (2)
         }
 
         //TODO перенсти var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch))); отсюда обратно в компорт
@@ -274,7 +281,7 @@ namespace ComPortTestForm
         {
             var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };//шаблонудаляемых элементов из входной строки
 
-            while (!token.IsCancellationRequested)//для остановкеи петли измерений через кнопку (2)
+            while (!TokenLoopMeter.IsCancellationRequested)//для остановкеи петли измерений через кнопку (2)
             {
                 //
                 //
@@ -310,67 +317,146 @@ namespace ComPortTestForm
 
         #endregion
 
-        # region measurement timer 
+        #region measurement timer 
 
-        //TODO SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX); 
-        private void GetMinMaxValueMeter()
+        Stopwatch Clock = new Stopwatch();//отладочный секундомер
+
+        private void GetMaxValueMeter(decimal loop = 1, int pause = 0)
         {
-            SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
-            SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
-            Thread.Sleep(50);
-            var resultVolt = SerialMeterVolt.Read();
-            var resultCurr = SerialMeterCurr.Read();
-            clock.Stop();
-            var unnecessary = new[] { '?', '\n', '\r', '+' };
-            var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
-            var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
+            int countLoop = 1;
+            while (!TokenMinMaxMeter.IsCancellationRequested)
+            {
+                SuspenseMeter.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
+                WaitSuspenseThreadMeter.WaitOne();
 
-            textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMaxV.Text = tempV));
-            textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMaxA.Text = tempC));
-            SuspenseMeter.Set();//продолить петлю измерений значений
-            MyTimer.Stop();
-            Debug.WriteLine($"timer stop {clock.Elapsed}");
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+                SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+                
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
+                SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
+                //
+                ThreadPause.WaitOne(pause);
+                //
+                SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
+                SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
+
+                Clock.Stop();
+                Debug.Write(Clock.Elapsed);
+
+                Thread.Sleep(50);
+
+                var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
+
+                var resultVolt = SerialMeterVolt.Read();
+                var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
+                textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMaxV.Text = tempV));
+
+                var resultCurr = SerialMeterCurr.Read();
+                var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
+                textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMaxA.Text = tempC));
+
+                SuspenseMeter.Set();//продолить петлю измерений значений
+
+                if (countLoop >= loop)
+                {
+                    SourceMinMaxMeter?.Cancel();
+                }
+                countLoop += 1;
+            }
+        }
+        private void GetMinValueMeter(decimal loop = 1, int pause = 0)
+        {
+            int countLoop = 1;
+            while (!TokenMinMaxMeter.IsCancellationRequested)
+            {
+                SuspenseMeter.Reset(); // приостановка пеи измерений значений, для отправки команды в прибор
+                WaitSuspenseThreadMeter.WaitOne();
+
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+                SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+               
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MIN);
+                SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MIN);
+                //
+                SuspenseMeter.Set();
+                ThreadPause.WaitOne(pause);
+                SuspenseMeter.Reset();
+                WaitSuspenseThreadMeter.WaitOne();
+                //
+                SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MIN);
+                SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MIN);
+
+                Clock.Stop();
+                Debug.Write(Clock.Elapsed);
+                Thread.Sleep(50);
+
+                var unnecessary = new[] {'?', '\n', '\r', '+', 'E'};
+
+                var resultVolt = SerialMeterVolt.Read();
+                var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
+                textBoxMeterGetMaxV?.Invoke((Action) (() => textBoxMeterGetMinV.Text = tempV));
+
+                var resultCurr = SerialMeterCurr.Read();
+                var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
+                textBoxMeterGetMaxA?.Invoke((Action) (() => textBoxMeterGetMinA.Text = tempC));
+
+                SuspenseMeter.Set(); //продолить петлю измерений значений
+               
+                if (countLoop >= loop)
+                {
+                    SourceMinMaxMeter?.Cancel();
+                }
+                countLoop += 1;
+            }
         }
 
-        #region Timer
+        private async void buttonStartMesaureTimer_Click(object sender, EventArgs e)
+        {
+            ThreadPause.Reset();
+            Clock.Start();
 
-        public static Timer MyTimer = new Timer();//таймер для переодичского чания измерений
-        Stopwatch clock = new Stopwatch();//отладочный секундомер
+            SourceMinMaxMeter = new CancellationTokenSource();
 
-        void SetTimer(decimal h, decimal m, decimal s)
+            TokenMinMaxMeter = SourceMinMaxMeter.Token;//для запуска петли
+
+            ((Button)sender).Enabled = false;//отключаем кнопку на время выполнения всех команд
+            groupBoxSetTimer.Enabled = false;
+
+            int pauseDelay = SetTimer(numericUpDownSetMeterH.Value, numericUpDownSetMeterM.Value,
+                numericUpDownSetMeterS.Value);
+            var repeatTimer = numericUpDownRepeatTimer.Value;
+
+            if (radioButtonMeterGetMax.Checked)
+            {
+                await Task.Run(() => GetMaxValueMeter(repeatTimer, pauseDelay), TokenMinMaxMeter);
+            }
+            if (radioButtonMeterGetMin.Checked)
+            {
+                await Task.Run(() => GetMinValueMeter(repeatTimer, pauseDelay), TokenMinMaxMeter);
+            }
+
+            ((Button)sender).Enabled = true;
+            buttonStopMesaureTimer.Enabled = true;
+            groupBoxSetTimer.Enabled = true;
+        }
+        
+        private void buttonStopMesaureTimer_Click(object sender, EventArgs e)
+        {
+            Button clickedButton = (Button)sender;
+            ((Button)sender).Enabled = false;//отключаем эту кнопку
+            groupBoxSetTimer.Enabled = true;
+
+            ThreadPause.Set();//останавлиаем петли имзерений (2)
+            SourceMinMaxMeter?.Cancel();
+        }
+
+        int SetTimer(decimal h, decimal m, decimal s)
         {
             var ss = new TimeSpan((int)h, (int)m, (int)s);
-            var ff = ss.TotalMilliseconds - 200;//задержка на отправк и принятие команд
-            MyTimer.Interval = (int)ff;
-            MyTimer.Start();
-        }
-
-        private void TimerEventProcessor(object sender, EventArgs e)//собтие вызваемое при тике таймера
-        {
-            Task.Run(GetMinMaxValueMeter);
-        }
-
-
-        private void buttonStartMesaureTimer_Click(object sender, EventArgs e)
-        {
-            clock.Start();
-            Debug.WriteLine("timer start");
-            SuspenseMeter.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
-            WaitSuspenseThreadMeter.WaitOne();
-            SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
-            SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
-            Thread.Sleep(50);
-            SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
-            SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
-            SuspenseMeter.Set();
-            SetTimer(numericUpDownSetMeterH.Value, numericUpDownSetMeterM.Value, numericUpDownSetMeterS.Value);
-
+            return (int)ss.TotalMilliseconds - 200;//задержка на отправк и принятие команд
         }
 
         #endregion
-
-        #endregion
-
 
         #endregion
 
