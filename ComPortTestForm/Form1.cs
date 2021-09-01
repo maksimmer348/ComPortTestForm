@@ -56,6 +56,25 @@ namespace ComPortTestForm
 
         #endregion
 
+        #region view
+        Color ChangeColor(string output)//смена цвета для индикации output
+        {
+            return output == "1\n" ? Color.Green : Color.Red;
+        }
+
+        void SwitchPrecisionModes()
+        {
+            if (FineTuning.Checked)
+            {
+                numericUpDownSetV.Increment = 0.01m;
+                numericUpDownSetA.Increment = 0.01m;
+            }
+            else
+            {
+                numericUpDownSetV.Increment = 1;
+                numericUpDownSetA.Increment = 1;
+            }
+        }
 
         #region Supply
 
@@ -208,25 +227,6 @@ namespace ComPortTestForm
 
         #endregion
 
-        #region view
-        Color ChangeColor(string output)//смена цвета для индикации output
-        {
-            return output == "1\n" ? Color.Green : Color.Red;
-        }
-
-        void SwitchPrecisionModes()
-        {
-            if (FineTuning.Checked)
-            {
-                numericUpDownSetV.Increment = 0.01m;
-                numericUpDownSetA.Increment = 0.01m;
-            }
-            else
-            {
-                numericUpDownSetV.Increment = 1;
-                numericUpDownSetA.Increment = 1;
-            }
-        }
 
         private void FineTuning_CheckedChanged(object sender, EventArgs e)
         {
@@ -460,8 +460,9 @@ namespace ComPortTestForm
 
         #endregion
 
-
     }
+
+    #region MyRegion
 
     public class MySerialPort
     {
@@ -531,6 +532,10 @@ namespace ComPortTestForm
         }
     }
 
+    #endregion
+
+    #region commands libs
+
     public static class CommandsSupplyGw //CommandsSupplyPSH
     {
         public const string SET_VOLTAGE = ":chan1:volt ";
@@ -580,4 +585,7 @@ namespace ComPortTestForm
 
 
     }
+
+    #endregion
+
 }

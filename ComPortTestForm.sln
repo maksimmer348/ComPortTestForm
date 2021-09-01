@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComPortTestForm", "ComPortTestForm\ComPortTestForm.csproj", "{144CAE5A-F2A5-44E6-9ACE-55C5AB7069E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComPortTestForm", "ComPortTestForm\ComPortTestForm.csproj", "{278216B6-3E47-4C8E-ACC5-3EFD28B9EF11}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{144CAE5A-F2A5-44E6-9ACE-55C5AB7069E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{144CAE5A-F2A5-44E6-9ACE-55C5AB7069E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{144CAE5A-F2A5-44E6-9ACE-55C5AB7069E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{144CAE5A-F2A5-44E6-9ACE-55C5AB7069E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{278216B6-3E47-4C8E-ACC5-3EFD28B9EF11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{278216B6-3E47-4C8E-ACC5-3EFD28B9EF11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{278216B6-3E47-4C8E-ACC5-3EFD28B9EF11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{278216B6-3E47-4C8E-ACC5-3EFD28B9EF11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {587FEFFF-BC3C-4B63-8E72-DEA52A3796BE}
+		SolutionGuid = {4EB867DD-566F-4378-9A16-4BCCBD9871E1}
 	EndGlobalSection
 EndGlobal
