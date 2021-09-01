@@ -254,9 +254,7 @@ namespace ComPortTestForm
         private static Mutex mutMeter = new Mutex();//во избежание пересения потоко кнопок
         protected ManualResetEvent SuspenseMeter = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThreadMeter = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
-        protected ManualResetEvent ThreadPause = new ManualResetEvent(false);
-        protected ManualResetEvent StopMeter = new ManualResetEvent(true);
-
+        protected ManualResetEvent ThreadPause = new ManualResetEvent(false);//временоной интервал для вычисления минимального/макисмального значений
 
         #region measurement loop
 
@@ -289,10 +287,6 @@ namespace ComPortTestForm
                 //
                 //
                 {
-                    WaitSuspenseThreadMeter.Set();
-                    StopMeter.WaitOne();//для экстренной остановки петли чтобы задрежки при измерении мин мах были минимальными
-                    WaitSuspenseThreadMeter.Reset();
-
                     SerialMeterVolt.Write(CommandsMeterGDM.RETURN_VOLTAGE);//команда запрос напряжения с вольтметра
                     Thread.Sleep(200);
                     //
@@ -306,10 +300,6 @@ namespace ComPortTestForm
                 //
                 //
                 {
-                    WaitSuspenseThreadMeter.Set();
-                    StopMeter.WaitOne();//для экстренной остановки петли чтобы задрежки при измерении мин мах были минимальными
-                    WaitSuspenseThreadMeter.Reset();
-
                     SerialMeterCurr.Write(CommandsMeterGDM.RETURN_CURRENT);//команда запрос тока с амперметра
                     Thread.Sleep(200);
                     //
@@ -337,7 +327,7 @@ namespace ComPortTestForm
         #region measurement timer 
 
         Stopwatch Clock = new Stopwatch();//отладочный секундомер
-
+        Stopwatch Clock1 = new Stopwatch();//отладочный секундомер
 
         //TODO обьеденить в один метод и оптимизировать(GetMaxValueMeter и GetMinValueMeter)
         private void GetMaxValueMeter(decimal loop = 1, int pause = 0)
@@ -363,14 +353,20 @@ namespace ComPortTestForm
                 //
                 SuspenseMeter.Set();//запуск петли измерений на время задержки испытания
 
-                var delauPlusPause = pause - (int)delay.TotalMilliseconds;//считаем задержку за вычетом задержки на петлю измерений и команды выше
+                var delauPlusPause = pause - ((int)delay.TotalMilliseconds - 500);//считаем задержку за вычетом задержки на петлю измерений и команды выше
+
                 ThreadPause.WaitOne(delauPlusPause);//останавливаем этот поток, прибор с этого момента и до конца паузы вычисляет максимальное значение напряжения и тока
-                StopMeter.Reset();
+                Clock1.Restart();
                 SuspenseMeter.Reset();// остановка петли измерений для считывния значений
 
                 Debug.Write($" задержка до выполнениея петли измерений {Clock.Elapsed} петля {countLoop}\n");
-
+                
                 WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли измерений и совобожения компорта
+                 var i = (int)Clock1.Elapsed.TotalMilliseconds;
+                
+                Clock.Restart();
+                Thread.Sleep(500 - i);
+                
                 //
                 //
                 SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);//отправляем команду на считывание
@@ -380,7 +376,7 @@ namespace ComPortTestForm
 
                 Thread.Sleep(50);
 
-
+                
                 var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
 
                 var resultVolt = SerialMeterVolt.Read();//считываем значение из буфера прибора
@@ -398,7 +394,6 @@ namespace ComPortTestForm
                     SourceMinMaxMeter?.Cancel();
                 }
                 countLoop += 1;
-                StopMeter.Set();
             }
         }
 
