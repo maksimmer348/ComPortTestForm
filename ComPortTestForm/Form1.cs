@@ -6,6 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
@@ -17,6 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using GodSharp.SerialPort;
 using GodSharp.SerialPort.Enums;
+using Microsoft.EntityFrameworkCore;
 using static ComPortTestForm.CommandsSupplyPSH;
 using Timer = System.Windows.Forms.Timer;
 
@@ -253,8 +255,8 @@ namespace ComPortTestForm
         protected ManualResetEvent SuspenseMeter = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThreadMeter = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
         protected ManualResetEvent ThreadPause = new ManualResetEvent(false);
+        protected ManualResetEvent StopMeter = new ManualResetEvent(true);
 
-       
 
         #region measurement loop
 
@@ -266,6 +268,7 @@ namespace ComPortTestForm
             TokenLoopMeter = SourceLoopMeter.Token;//для запуска петли
             Task.Run(() => WorkRepeatMeter(), TokenLoopMeter);
         }
+
         private void buttonStopMesaure_Click(object sender, EventArgs e)//отановка петли измерений
         {
             buttonStartMesaure.Enabled = true;//включаем кнопку запуска плеи измерений
@@ -286,22 +289,36 @@ namespace ComPortTestForm
                 //
                 //
                 {
+                    WaitSuspenseThreadMeter.Set();
+                    StopMeter.WaitOne();//для экстренной остановки петли чтобы задрежки при измерении мин мах были минимальными
+                    WaitSuspenseThreadMeter.Reset();
+
                     SerialMeterVolt.Write(CommandsMeterGDM.RETURN_VOLTAGE);//команда запрос напряжения с вольтметра
                     Thread.Sleep(200);
                     //
                     var value = SerialMeterVolt.Read();
-                    var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
+                    if (value != null)
+                    {
+                        var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
                     textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetV.Text = temp));
+                    }
                 }
                 //
                 //
                 {
+                    WaitSuspenseThreadMeter.Set();
+                    StopMeter.WaitOne();//для экстренной остановки петли чтобы задрежки при измерении мин мах были минимальными
+                    WaitSuspenseThreadMeter.Reset();
+
                     SerialMeterCurr.Write(CommandsMeterGDM.RETURN_CURRENT);//команда запрос тока с амперметра
                     Thread.Sleep(200);
                     //
                     var value = SerialMeterCurr.Read();
-                    var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
-                    textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetA.Text = temp));
+                    if (value != null)
+                    {
+                        var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
+                        textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetA.Text = temp));
+                    }
                 }
                 //
                 //
@@ -321,37 +338,56 @@ namespace ComPortTestForm
 
         Stopwatch Clock = new Stopwatch();//отладочный секундомер
 
+
+        //TODO обьеденить в один метод и оптимизировать(GetMaxValueMeter и GetMinValueMeter)
         private void GetMaxValueMeter(decimal loop = 1, int pause = 0)
         {
-            int countLoop = 1;
+            int countLoop = 1;// клоичество рабочих циклов
             while (!TokenMinMaxMeter.IsCancellationRequested)
             {
-                SuspenseMeter.Reset();// приостановка пеи измерений значений, для отправки команды в прибор
-                WaitSuspenseThreadMeter.WaitOne();
+                Clock.Restart();//обнуление часов при кажом цикле
 
-                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
+                SuspenseMeter.Reset();//приостановка петли измерений значений, для отправки команды в прибор (далее просто петля измерений)
+                WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли и совобожения компорта
+
+                var delay = Clock.Elapsed;
+
+                Debug.Write($"задержка на команду {delay} петля {countLoop}\n");
+
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);//сброс настроек
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
-                
+             
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
                 //
-                ThreadPause.WaitOne(pause);
                 //
-                SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
+                SuspenseMeter.Set();//запуск петли измерений на время задержки испытания
+
+                var delauPlusPause = pause - (int)delay.TotalMilliseconds;//считаем задержку за вычетом задержки на петлю измерений и команды выше
+                ThreadPause.WaitOne(delauPlusPause);//останавливаем этот поток, прибор с этого момента и до конца паузы вычисляет максимальное значение напряжения и тока
+                StopMeter.Reset();
+                SuspenseMeter.Reset();// остановка петли измерений для считывния значений
+
+                Debug.Write($" задержка до выполнениея петли измерений {Clock.Elapsed} петля {countLoop}\n");
+
+                WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли измерений и совобожения компорта
+                //
+                //
+                SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);//отправляем команду на считывание
                 SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
 
-                Clock.Stop();
-                Debug.Write(Clock.Elapsed);
+                Debug.Write($"общая задержка {Clock.Elapsed} петля {countLoop}\n");
 
                 Thread.Sleep(50);
 
+
                 var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
 
-                var resultVolt = SerialMeterVolt.Read();
+                var resultVolt = SerialMeterVolt.Read();//считываем значение из буфера прибора
                 var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
                 textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMaxV.Text = tempV));
 
-                var resultCurr = SerialMeterCurr.Read();
+                var resultCurr = SerialMeterCurr.Read();//считываем значение из буфера прибора
                 var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
                 textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMaxA.Text = tempC));
 
@@ -362,8 +398,11 @@ namespace ComPortTestForm
                     SourceMinMaxMeter?.Cancel();
                 }
                 countLoop += 1;
+                StopMeter.Set();
             }
         }
+
+        //TODO обьеденить в один метод и оптимизировать(GetMaxValueMeter и GetMinValueMeter)
         private void GetMinValueMeter(decimal loop = 1, int pause = 0)
         {
             int countLoop = 1;
@@ -374,7 +413,7 @@ namespace ComPortTestForm
 
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
-               
+
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MIN);
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MIN);
                 //
@@ -390,18 +429,18 @@ namespace ComPortTestForm
                 Debug.Write(Clock.Elapsed);
                 Thread.Sleep(50);
 
-                var unnecessary = new[] {'?', '\n', '\r', '+', 'E'};
+                var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
 
                 var resultVolt = SerialMeterVolt.Read();
                 var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
-                textBoxMeterGetMaxV?.Invoke((Action) (() => textBoxMeterGetMinV.Text = tempV));
+                textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMinV.Text = tempV));
 
                 var resultCurr = SerialMeterCurr.Read();
                 var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
-                textBoxMeterGetMaxA?.Invoke((Action) (() => textBoxMeterGetMinA.Text = tempC));
+                textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMinA.Text = tempC));
 
                 SuspenseMeter.Set(); //продолить петлю измерений значений
-               
+
                 if (countLoop >= loop)
                 {
                     SourceMinMaxMeter?.Cancel();
@@ -413,6 +452,7 @@ namespace ComPortTestForm
         private async void buttonStartMesaureTimer_Click(object sender, EventArgs e)
         {
             ThreadPause.Reset();
+
             Clock.Start();
 
             SourceMinMaxMeter = new CancellationTokenSource();
@@ -439,7 +479,7 @@ namespace ComPortTestForm
             buttonStopMesaureTimer.Enabled = true;
             groupBoxSetTimer.Enabled = true;
         }
-        
+
         private void buttonStopMesaureTimer_Click(object sender, EventArgs e)
         {
             Button clickedButton = (Button)sender;
@@ -453,7 +493,7 @@ namespace ComPortTestForm
         int SetTimer(decimal h, decimal m, decimal s)
         {
             var ss = new TimeSpan((int)h, (int)m, (int)s);
-            return (int)ss.TotalMilliseconds - 200;//задержка на отправк и принятие команд
+            return (int)ss.TotalMilliseconds;//задержка на отправк и принятие команд
         }
 
         #endregion
@@ -462,7 +502,58 @@ namespace ComPortTestForm
 
     }
 
-    #region MyRegion
+    #region mesaure pattern
+
+    public class GetValues
+    {
+        public int Id { get; set; }
+        public string Voltage { get; set; }
+        public string Ampere { get; set; }
+        public DateTime DateTime { get; set; } = DateTime.Now;
+
+        public GetValues(string voltage, string ampere) //,DateTime dateTime)
+        {
+
+            Voltage = voltage;
+            Ampere = ampere;
+            //DateTime = dateTime;
+        }
+
+        public GetValues()
+        {
+
+        }
+    }
+
+    #endregion
+
+    #region db init 
+    public class ApplicationContext : DbContext
+    {
+        //представляет набор сущностей, хранящихся в базе данных
+        public DbSet<GetValues> Users { get; set; }
+        private string DBPath = "DataBaseSupply.db";
+
+        public ApplicationContext()
+        {
+            if (!File.Exists(DBPath))
+            {
+                Database.EnsureCreated();
+            }
+
+        }
+
+        //Переопределение у класса контекста данных метода
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlite($"Data Source = {DBPath}"); //В этот метод передается объект DbContextOptionsBuilder,
+
+        // который позволяет создать параметры подключения. Для их создания вызывается метод UseSqlServer, в который передается строка подключения.
+    }
+
+    #endregion
+
+
+    #region serial port
 
     public class MySerialPort
     {

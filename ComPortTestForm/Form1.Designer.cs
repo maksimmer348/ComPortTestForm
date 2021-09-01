@@ -90,9 +90,10 @@ namespace ComPortTestForm
             // 
             // buttonSetValue
             // 
-            this.buttonSetValue.Location = new System.Drawing.Point(6, 103);
+            this.buttonSetValue.Location = new System.Drawing.Point(7, 119);
+            this.buttonSetValue.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonSetValue.Name = "buttonSetValue";
-            this.buttonSetValue.Size = new System.Drawing.Size(36, 23);
+            this.buttonSetValue.Size = new System.Drawing.Size(42, 27);
             this.buttonSetValue.TabIndex = 0;
             this.buttonSetValue.Text = "уст.";
             this.buttonSetValue.UseVisualStyleBackColor = true;
@@ -101,60 +102,67 @@ namespace ComPortTestForm
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(6, 19);
+            this.label1.Location = new System.Drawing.Point(7, 22);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(74, 13);
+            this.label1.Size = new System.Drawing.Size(78, 15);
             this.label1.TabIndex = 2;
             this.label1.Text = "установить V";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(6, 58);
+            this.label2.Location = new System.Drawing.Point(7, 67);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(74, 13);
+            this.label2.Size = new System.Drawing.Size(79, 15);
             this.label2.TabIndex = 4;
             this.label2.Text = "установить A";
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(92, 58);
+            this.label3.Location = new System.Drawing.Point(107, 67);
+            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(56, 13);
+            this.label3.Size = new System.Drawing.Size(60, 15);
             this.label3.TabIndex = 9;
             this.label3.Text = "считать A";
             // 
             // textBoxSupplyGetA
             // 
-            this.textBoxSupplyGetA.Location = new System.Drawing.Point(95, 74);
+            this.textBoxSupplyGetA.Location = new System.Drawing.Point(111, 85);
+            this.textBoxSupplyGetA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxSupplyGetA.Name = "textBoxSupplyGetA";
             this.textBoxSupplyGetA.ReadOnly = true;
-            this.textBoxSupplyGetA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxSupplyGetA.Size = new System.Drawing.Size(82, 23);
             this.textBoxSupplyGetA.TabIndex = 8;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(92, 19);
+            this.label4.Location = new System.Drawing.Point(107, 22);
+            this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(56, 13);
+            this.label4.Size = new System.Drawing.Size(59, 15);
             this.label4.TabIndex = 7;
             this.label4.Text = "считать V";
             // 
             // textBoxSupplyGetV
             // 
-            this.textBoxSupplyGetV.Location = new System.Drawing.Point(95, 35);
+            this.textBoxSupplyGetV.Location = new System.Drawing.Point(111, 40);
+            this.textBoxSupplyGetV.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxSupplyGetV.Name = "textBoxSupplyGetV";
             this.textBoxSupplyGetV.ReadOnly = true;
-            this.textBoxSupplyGetV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxSupplyGetV.Size = new System.Drawing.Size(82, 23);
             this.textBoxSupplyGetV.TabIndex = 6;
             // 
             // buttonOutput
             // 
-            this.buttonOutput.Location = new System.Drawing.Point(95, 103);
+            this.buttonOutput.Location = new System.Drawing.Point(111, 119);
+            this.buttonOutput.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonOutput.Name = "buttonOutput";
-            this.buttonOutput.Size = new System.Drawing.Size(42, 23);
+            this.buttonOutput.Size = new System.Drawing.Size(49, 27);
             this.buttonOutput.TabIndex = 5;
             this.buttonOutput.Text = " ⍈ ";
             this.buttonOutput.UseVisualStyleBackColor = true;
@@ -163,10 +171,11 @@ namespace ComPortTestForm
             // buttonRefresh
             // 
             this.buttonRefresh.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.buttonRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.75F);
-            this.buttonRefresh.Location = new System.Drawing.Point(52, 103);
+            this.buttonRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.buttonRefresh.Location = new System.Drawing.Point(61, 119);
+            this.buttonRefresh.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(28, 23);
+            this.buttonRefresh.Size = new System.Drawing.Size(33, 27);
             this.buttonRefresh.TabIndex = 10;
             this.buttonRefresh.Text = " ⟳";
             this.buttonRefresh.UseVisualStyleBackColor = true;
@@ -176,9 +185,10 @@ namespace ComPortTestForm
             // 
             this.indicatorOutput.BackColor = System.Drawing.Color.Red;
             this.indicatorOutput.Enabled = false;
-            this.indicatorOutput.Location = new System.Drawing.Point(143, 103);
+            this.indicatorOutput.Location = new System.Drawing.Point(167, 119);
+            this.indicatorOutput.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.indicatorOutput.Name = "indicatorOutput";
-            this.indicatorOutput.Size = new System.Drawing.Size(23, 23);
+            this.indicatorOutput.Size = new System.Drawing.Size(27, 27);
             this.indicatorOutput.TabIndex = 11;
             this.indicatorOutput.UseVisualStyleBackColor = false;
             // 
@@ -197,9 +207,11 @@ namespace ComPortTestForm
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.textBoxSupplyGetV);
             this.groupBox1.Controls.Add(this.buttonOutput);
-            this.groupBox1.Location = new System.Drawing.Point(12, 29);
+            this.groupBox1.Location = new System.Drawing.Point(14, 33);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(177, 167);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox1.Size = new System.Drawing.Size(206, 193);
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "groupBox1";
@@ -207,9 +219,10 @@ namespace ComPortTestForm
             // FineTuning
             // 
             this.FineTuning.AutoSize = true;
-            this.FineTuning.Location = new System.Drawing.Point(6, 136);
+            this.FineTuning.Location = new System.Drawing.Point(7, 157);
+            this.FineTuning.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.FineTuning.Name = "FineTuning";
-            this.FineTuning.Size = new System.Drawing.Size(54, 17);
+            this.FineTuning.Size = new System.Drawing.Size(59, 19);
             this.FineTuning.TabIndex = 19;
             this.FineTuning.Text = "точно";
             this.FineTuning.UseVisualStyleBackColor = true;
@@ -218,27 +231,29 @@ namespace ComPortTestForm
             // numericUpDownSetA
             // 
             this.numericUpDownSetA.DecimalPlaces = 2;
-            this.numericUpDownSetA.Location = new System.Drawing.Point(6, 74);
+            this.numericUpDownSetA.Location = new System.Drawing.Point(7, 85);
+            this.numericUpDownSetA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetA.Maximum = new decimal(new int[] {
             2,
             0,
             0,
             0});
             this.numericUpDownSetA.Name = "numericUpDownSetA";
-            this.numericUpDownSetA.Size = new System.Drawing.Size(71, 20);
+            this.numericUpDownSetA.Size = new System.Drawing.Size(83, 23);
             this.numericUpDownSetA.TabIndex = 17;
             // 
             // numericUpDownSetV
             // 
             this.numericUpDownSetV.DecimalPlaces = 2;
-            this.numericUpDownSetV.Location = new System.Drawing.Point(6, 35);
+            this.numericUpDownSetV.Location = new System.Drawing.Point(7, 40);
+            this.numericUpDownSetV.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetV.Maximum = new decimal(new int[] {
             8,
             0,
             0,
             0});
             this.numericUpDownSetV.Name = "numericUpDownSetV";
-            this.numericUpDownSetV.Size = new System.Drawing.Size(71, 20);
+            this.numericUpDownSetV.Size = new System.Drawing.Size(83, 23);
             this.numericUpDownSetV.TabIndex = 16;
             // 
             // groupBox2
@@ -259,9 +274,11 @@ namespace ComPortTestForm
             this.groupBox2.Controls.Add(this.textBoxMeterGetV);
             this.groupBox2.Controls.Add(this.textBoxMeterGetA);
             this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Location = new System.Drawing.Point(195, 29);
+            this.groupBox2.Location = new System.Drawing.Point(227, 33);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(420, 167);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBox2.Size = new System.Drawing.Size(490, 193);
             this.groupBox2.TabIndex = 13;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "groupBox2";
@@ -279,9 +296,11 @@ namespace ComPortTestForm
             this.groupBoxSetTimer.Controls.Add(this.label11);
             this.groupBoxSetTimer.Controls.Add(this.lamel9);
             this.groupBoxSetTimer.Controls.Add(this.numericUpDownSetMeterM);
-            this.groupBoxSetTimer.Location = new System.Drawing.Point(237, 13);
+            this.groupBoxSetTimer.Location = new System.Drawing.Point(276, 15);
+            this.groupBoxSetTimer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.groupBoxSetTimer.Name = "groupBoxSetTimer";
-            this.groupBoxSetTimer.Size = new System.Drawing.Size(172, 120);
+            this.groupBoxSetTimer.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.groupBoxSetTimer.Size = new System.Drawing.Size(201, 138);
             this.groupBoxSetTimer.TabIndex = 36;
             this.groupBoxSetTimer.TabStop = false;
             this.groupBoxSetTimer.Text = "настройка таймера";
@@ -289,27 +308,30 @@ namespace ComPortTestForm
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(142, 23);
+            this.label13.Location = new System.Drawing.Point(166, 27);
+            this.label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(25, 13);
+            this.label13.Size = new System.Drawing.Size(25, 15);
             this.label13.TabIndex = 35;
             this.label13.Text = "раз";
             // 
             // radioButtonMeterGetMin
             // 
             this.radioButtonMeterGetMin.AutoSize = true;
-            this.radioButtonMeterGetMin.Location = new System.Drawing.Point(95, 45);
+            this.radioButtonMeterGetMin.Location = new System.Drawing.Point(111, 52);
+            this.radioButtonMeterGetMin.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.radioButtonMeterGetMin.Name = "radioButtonMeterGetMin";
-            this.radioButtonMeterGetMin.Size = new System.Drawing.Size(41, 17);
+            this.radioButtonMeterGetMin.Size = new System.Drawing.Size(46, 19);
             this.radioButtonMeterGetMin.TabIndex = 33;
             this.radioButtonMeterGetMin.Text = "min";
             this.radioButtonMeterGetMin.UseVisualStyleBackColor = true;
             // 
             // buttonStartMesaureTimer
             // 
-            this.buttonStartMesaureTimer.Location = new System.Drawing.Point(6, 91);
+            this.buttonStartMesaureTimer.Location = new System.Drawing.Point(7, 105);
+            this.buttonStartMesaureTimer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonStartMesaureTimer.Name = "buttonStartMesaureTimer";
-            this.buttonStartMesaureTimer.Size = new System.Drawing.Size(161, 22);
+            this.buttonStartMesaureTimer.Size = new System.Drawing.Size(188, 25);
             this.buttonStartMesaureTimer.TabIndex = 30;
             this.buttonStartMesaureTimer.Text = "Timer ▶";
             this.buttonStartMesaureTimer.UseVisualStyleBackColor = true;
@@ -319,9 +341,10 @@ namespace ComPortTestForm
             // 
             this.radioButtonMeterGetMax.AutoSize = true;
             this.radioButtonMeterGetMax.Checked = true;
-            this.radioButtonMeterGetMax.Location = new System.Drawing.Point(94, 68);
+            this.radioButtonMeterGetMax.Location = new System.Drawing.Point(110, 78);
+            this.radioButtonMeterGetMax.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.radioButtonMeterGetMax.Name = "radioButtonMeterGetMax";
-            this.radioButtonMeterGetMax.Size = new System.Drawing.Size(44, 17);
+            this.radioButtonMeterGetMax.Size = new System.Drawing.Size(48, 19);
             this.radioButtonMeterGetMax.TabIndex = 32;
             this.radioButtonMeterGetMax.TabStop = true;
             this.radioButtonMeterGetMax.Text = "max";
@@ -329,7 +352,8 @@ namespace ComPortTestForm
             // 
             // numericUpDownRepeatTimer
             // 
-            this.numericUpDownRepeatTimer.Location = new System.Drawing.Point(83, 19);
+            this.numericUpDownRepeatTimer.Location = new System.Drawing.Point(97, 22);
+            this.numericUpDownRepeatTimer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownRepeatTimer.Maximum = new decimal(new int[] {
             59,
             0,
@@ -341,10 +365,10 @@ namespace ComPortTestForm
             0,
             0});
             this.numericUpDownRepeatTimer.Name = "numericUpDownRepeatTimer";
-            this.numericUpDownRepeatTimer.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownRepeatTimer.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownRepeatTimer.TabIndex = 34;
             this.numericUpDownRepeatTimer.Value = new decimal(new int[] {
-            1,
+            5,
             0,
             0,
             0});
@@ -352,27 +376,30 @@ namespace ComPortTestForm
             // label12
             // 
             this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(65, 69);
+            this.label12.Location = new System.Drawing.Point(76, 80);
+            this.label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(13, 13);
+            this.label12.Size = new System.Drawing.Size(13, 15);
             this.label12.TabIndex = 29;
             this.label12.Text = "с";
             // 
             // numericUpDownSetMeterH
             // 
-            this.numericUpDownSetMeterH.Location = new System.Drawing.Point(6, 19);
+            this.numericUpDownSetMeterH.Location = new System.Drawing.Point(7, 22);
+            this.numericUpDownSetMeterH.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetMeterH.Maximum = new decimal(new int[] {
             23,
             0,
             0,
             0});
             this.numericUpDownSetMeterH.Name = "numericUpDownSetMeterH";
-            this.numericUpDownSetMeterH.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterH.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownSetMeterH.TabIndex = 20;
             // 
             // numericUpDownSetMeterS
             // 
-            this.numericUpDownSetMeterS.Location = new System.Drawing.Point(6, 65);
+            this.numericUpDownSetMeterS.Location = new System.Drawing.Point(7, 75);
+            this.numericUpDownSetMeterS.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetMeterS.Maximum = new decimal(new int[] {
             59,
             0,
@@ -384,7 +411,7 @@ namespace ComPortTestForm
             0,
             0});
             this.numericUpDownSetMeterS.Name = "numericUpDownSetMeterS";
-            this.numericUpDownSetMeterS.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterS.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownSetMeterS.TabIndex = 26;
             this.numericUpDownSetMeterS.Value = new decimal(new int[] {
             4,
@@ -395,40 +422,44 @@ namespace ComPortTestForm
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(66, 46);
+            this.label11.Location = new System.Drawing.Point(77, 53);
+            this.label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(15, 13);
+            this.label11.Size = new System.Drawing.Size(16, 15);
             this.label11.TabIndex = 28;
             this.label11.Text = "м";
             // 
             // lamel9
             // 
             this.lamel9.AutoSize = true;
-            this.lamel9.Location = new System.Drawing.Point(65, 23);
+            this.lamel9.Location = new System.Drawing.Point(76, 27);
+            this.lamel9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lamel9.Name = "lamel9";
-            this.lamel9.Size = new System.Drawing.Size(12, 13);
+            this.lamel9.Size = new System.Drawing.Size(14, 15);
             this.lamel9.TabIndex = 27;
             this.lamel9.Text = "ч";
             // 
             // numericUpDownSetMeterM
             // 
-            this.numericUpDownSetMeterM.Location = new System.Drawing.Point(6, 42);
+            this.numericUpDownSetMeterM.Location = new System.Drawing.Point(7, 48);
+            this.numericUpDownSetMeterM.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetMeterM.Maximum = new decimal(new int[] {
             59,
             0,
             0,
             0});
             this.numericUpDownSetMeterM.Name = "numericUpDownSetMeterM";
-            this.numericUpDownSetMeterM.Size = new System.Drawing.Size(53, 20);
+            this.numericUpDownSetMeterM.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownSetMeterM.TabIndex = 25;
             // 
             // buttonStopMesaureTimer
             // 
             this.buttonStopMesaureTimer.AccessibleRole = System.Windows.Forms.AccessibleRole.ButtonMenu;
-            this.buttonStopMesaureTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.25F);
-            this.buttonStopMesaureTimer.Location = new System.Drawing.Point(243, 138);
+            this.buttonStopMesaureTimer.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.buttonStopMesaureTimer.Location = new System.Drawing.Point(284, 159);
+            this.buttonStopMesaureTimer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonStopMesaureTimer.Name = "buttonStopMesaureTimer";
-            this.buttonStopMesaureTimer.Size = new System.Drawing.Size(161, 22);
+            this.buttonStopMesaureTimer.Size = new System.Drawing.Size(188, 25);
             this.buttonStopMesaureTimer.TabIndex = 35;
             this.buttonStopMesaureTimer.Text = "Timer █";
             this.buttonStopMesaureTimer.UseVisualStyleBackColor = true;
@@ -437,77 +468,86 @@ namespace ComPortTestForm
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(160, 57);
+            this.label9.Location = new System.Drawing.Point(187, 66);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(36, 13);
+            this.label9.Size = new System.Drawing.Size(41, 15);
             this.label9.TabIndex = 24;
             this.label9.Text = "max A";
             // 
             // textBoxMeterGetMaxV
             // 
-            this.textBoxMeterGetMaxV.Location = new System.Drawing.Point(160, 34);
+            this.textBoxMeterGetMaxV.Location = new System.Drawing.Point(187, 39);
+            this.textBoxMeterGetMaxV.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetMaxV.Name = "textBoxMeterGetMaxV";
             this.textBoxMeterGetMaxV.ReadOnly = true;
-            this.textBoxMeterGetMaxV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMaxV.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetMaxV.TabIndex = 21;
             // 
             // textBoxMeterGetMaxA
             // 
-            this.textBoxMeterGetMaxA.Location = new System.Drawing.Point(160, 74);
+            this.textBoxMeterGetMaxA.Location = new System.Drawing.Point(187, 85);
+            this.textBoxMeterGetMaxA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetMaxA.Name = "textBoxMeterGetMaxA";
             this.textBoxMeterGetMaxA.ReadOnly = true;
-            this.textBoxMeterGetMaxA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMaxA.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetMaxA.TabIndex = 23;
             // 
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(160, 18);
+            this.label10.Location = new System.Drawing.Point(187, 21);
+            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(36, 13);
+            this.label10.Size = new System.Drawing.Size(40, 15);
             this.label10.TabIndex = 22;
             this.label10.Text = "max V";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(83, 57);
+            this.label7.Location = new System.Drawing.Point(97, 66);
+            this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(33, 13);
+            this.label7.Size = new System.Drawing.Size(39, 15);
             this.label7.TabIndex = 20;
             this.label7.Text = "min A";
             // 
             // textBoxMeterGetMinV
             // 
-            this.textBoxMeterGetMinV.Location = new System.Drawing.Point(83, 34);
+            this.textBoxMeterGetMinV.Location = new System.Drawing.Point(97, 39);
+            this.textBoxMeterGetMinV.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetMinV.Name = "textBoxMeterGetMinV";
             this.textBoxMeterGetMinV.ReadOnly = true;
-            this.textBoxMeterGetMinV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMinV.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetMinV.TabIndex = 17;
             // 
             // textBoxMeterGetMinA
             // 
-            this.textBoxMeterGetMinA.Location = new System.Drawing.Point(83, 74);
+            this.textBoxMeterGetMinA.Location = new System.Drawing.Point(97, 85);
+            this.textBoxMeterGetMinA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetMinA.Name = "textBoxMeterGetMinA";
             this.textBoxMeterGetMinA.ReadOnly = true;
-            this.textBoxMeterGetMinA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetMinA.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetMinA.TabIndex = 19;
             // 
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(83, 18);
+            this.label8.Location = new System.Drawing.Point(97, 21);
+            this.label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(33, 13);
+            this.label8.Size = new System.Drawing.Size(38, 15);
             this.label8.TabIndex = 18;
             this.label8.Text = "min V";
             // 
             // buttonStopMesaure
             // 
-            this.buttonStopMesaure.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.25F);
-            this.buttonStopMesaure.Location = new System.Drawing.Point(48, 104);
+            this.buttonStopMesaure.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.buttonStopMesaure.Location = new System.Drawing.Point(56, 120);
+            this.buttonStopMesaure.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonStopMesaure.Name = "buttonStopMesaure";
-            this.buttonStopMesaure.Size = new System.Drawing.Size(29, 22);
+            this.buttonStopMesaure.Size = new System.Drawing.Size(34, 25);
             this.buttonStopMesaure.TabIndex = 16;
             this.buttonStopMesaure.Text = "█";
             this.buttonStopMesaure.UseVisualStyleBackColor = true;
@@ -515,9 +555,10 @@ namespace ComPortTestForm
             // 
             // buttonStartMesaure
             // 
-            this.buttonStartMesaure.Location = new System.Drawing.Point(6, 104);
+            this.buttonStartMesaure.Location = new System.Drawing.Point(7, 120);
+            this.buttonStartMesaure.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.buttonStartMesaure.Name = "buttonStartMesaure";
-            this.buttonStartMesaure.Size = new System.Drawing.Size(36, 22);
+            this.buttonStartMesaure.Size = new System.Drawing.Size(42, 25);
             this.buttonStartMesaure.TabIndex = 12;
             this.buttonStartMesaure.Text = "▶";
             this.buttonStartMesaure.UseVisualStyleBackColor = true;
@@ -526,34 +567,38 @@ namespace ComPortTestForm
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(6, 58);
+            this.label5.Location = new System.Drawing.Point(7, 67);
+            this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(56, 13);
+            this.label5.Size = new System.Drawing.Size(60, 15);
             this.label5.TabIndex = 15;
             this.label5.Text = "считать A";
             // 
             // textBoxMeterGetV
             // 
-            this.textBoxMeterGetV.Location = new System.Drawing.Point(6, 35);
+            this.textBoxMeterGetV.Location = new System.Drawing.Point(7, 40);
+            this.textBoxMeterGetV.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetV.Name = "textBoxMeterGetV";
             this.textBoxMeterGetV.ReadOnly = true;
-            this.textBoxMeterGetV.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetV.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetV.TabIndex = 12;
             // 
             // textBoxMeterGetA
             // 
-            this.textBoxMeterGetA.Location = new System.Drawing.Point(6, 75);
+            this.textBoxMeterGetA.Location = new System.Drawing.Point(7, 87);
+            this.textBoxMeterGetA.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.textBoxMeterGetA.Name = "textBoxMeterGetA";
             this.textBoxMeterGetA.ReadOnly = true;
-            this.textBoxMeterGetA.Size = new System.Drawing.Size(71, 20);
+            this.textBoxMeterGetA.Size = new System.Drawing.Size(82, 23);
             this.textBoxMeterGetA.TabIndex = 14;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 19);
+            this.label6.Location = new System.Drawing.Point(7, 22);
+            this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(56, 13);
+            this.label6.Size = new System.Drawing.Size(59, 15);
             this.label6.TabIndex = 13;
             this.label6.Text = "считать V";
             // 
@@ -563,7 +608,8 @@ namespace ComPortTestForm
             this.настройкиToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(625, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(7, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(729, 24);
             this.menuStrip1.TabIndex = 14;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -590,14 +636,15 @@ namespace ComPortTestForm
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(625, 201);
+            this.ClientSize = new System.Drawing.Size(729, 232);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Form1";
