@@ -318,6 +318,7 @@ namespace ComPortTestForm
             // radioButtonMeterGetMin
             // 
             this.radioButtonMeterGetMin.AutoSize = true;
+            this.radioButtonMeterGetMin.Enabled = false;
             this.radioButtonMeterGetMin.Location = new System.Drawing.Point(111, 52);
             this.radioButtonMeterGetMin.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.radioButtonMeterGetMin.Name = "radioButtonMeterGetMin";

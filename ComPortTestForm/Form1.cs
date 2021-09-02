@@ -6,19 +6,14 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using GodSharp.SerialPort;
-using GodSharp.SerialPort.Enums;
-using Microsoft.EntityFrameworkCore;
 using static ComPortTestForm.CommandsSupplyPSH;
 using Timer = System.Windows.Forms.Timer;
 
@@ -26,7 +21,9 @@ namespace ComPortTestForm
 {
     public partial class Form1 : Form
     {
-        #region Ctor & Init
+        #region ctor & init
+
+        private ApplicationContext db;//перменная для ипсолзования баз данных
 
         //TODO добавить класс поиска( ComPort.Write("*IDN?");) и инициализации приборов по полученным id => GWInstek,GDM78341,GEP844336,1.03
         //TODO 
@@ -49,7 +46,20 @@ namespace ComPortTestForm
             buttonStopMesaure.Enabled = false;
             //
             //
+            db = new ApplicationContext();
+            ReportBD += ToBD;
+
             Task.Run(() => Start());
+        }
+
+        void ToBD(GetValues getValues)
+        {
+            //удалить как файл
+            db.Add(getValues);
+            db.SaveChanges();
+
+            var users = db.Users.OrderBy(b => b.Id).Last();//выберем первый элемент из списка базы данных
+            Debug.WriteLine($"{users.Id} {users.Voltage} {users.Ampere} {users.TimeMesaure} {users.DateTime}");//выведем на коносль элемент из списка базы данных
         }
         private void Form1_Load(object sender, System.EventArgs e)
         {
@@ -63,7 +73,8 @@ namespace ComPortTestForm
         {
             return output == "1\n" ? Color.Green : Color.Red;
         }
-
+        //
+        //точность для нумериков
         void SwitchPrecisionModes()
         {
             if (FineTuning.Checked)
@@ -77,7 +88,12 @@ namespace ComPortTestForm
                 numericUpDownSetA.Increment = 1;
             }
         }
-
+        private void FineTuning_CheckedChanged(object sender, EventArgs e)
+        {
+            SwitchPrecisionModes();
+        }
+        //
+        //проверка таймеров на !00:00:00
         void LockedZeroSeconds()
         {
             if (numericUpDownSetMeterM.Value <= 0 && numericUpDownSetMeterH.Value <= 0)
@@ -104,8 +120,10 @@ namespace ComPortTestForm
         {
             LockedZeroSeconds();
         }
+        //
+        #endregion
 
-        #region Supply
+        #region supply
 
         MySerialPort SerialSupply = new MySerialPort(21, 57600, 0);
 
@@ -115,7 +133,6 @@ namespace ComPortTestForm
 
         //TODO перенести и унифицировать все мтоды Regex.Matches в единый метод 
         //TODO buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick())); заменить на вызов метода
-
         void Start()//метод первичной инициализации
         {
             SerialSupply.Write(RETURN_SET_VOLTAGE);
@@ -132,7 +149,6 @@ namespace ComPortTestForm
 
             buttonRefresh?.Invoke((Action)(() => buttonRefresh.PerformClick()));
         }
-
 
         #region control buttons
 
@@ -162,7 +178,6 @@ namespace ComPortTestForm
 
             mutSupply.ReleaseMutex();
         }
-
 
         private async void buttonOutput_Click(object sender, EventArgs e)
         {
@@ -198,6 +213,7 @@ namespace ComPortTestForm
             SuspenseSupply.Set();//продолить петлю измерений значений
             mutSupply.ReleaseMutex();
         }
+        
 
         #endregion
 
@@ -209,8 +225,10 @@ namespace ComPortTestForm
             Task.Run(WorkRepeatSupply);
         }
 
+        //TODO обьеденить возмонжно с метер 
         private void WorkRepeatSupply()
         {
+            //TODO убрать в класс комкорт
             var unnecessary = new[] { '?', '\n', '\r', '+' };
 
             while (true)
@@ -257,17 +275,9 @@ namespace ComPortTestForm
         #endregion
 
 
-        private void FineTuning_CheckedChanged(object sender, EventArgs e)
-        {
-            SwitchPrecisionModes();
-        }
-
         #endregion
 
-        #endregion
-
-
-        #region Meter
+        #region meter
 
         MySerialPort SerialMeterVolt = new MySerialPort(22, 57600, 0);
         MySerialPort SerialMeterCurr = new MySerialPort(19, 57600, 0);
@@ -282,6 +292,10 @@ namespace ComPortTestForm
         protected ManualResetEvent SuspenseMeter = new ManualResetEvent(true);//для приостановки петли измерений значений
         protected ManualResetEvent WaitSuspenseThreadMeter = new ManualResetEvent(true);//ожидает выполнения потока, дабы они не перемешивались
         protected ManualResetEvent ThreadPause = new ManualResetEvent(false);//временоной интервал для вычисления минимального/макисмального значений
+
+        Stopwatch ClockCommandInterval = new Stopwatch();//секундомер измеряет время выолнения петли измерений
+        Stopwatch ClockCommandIntervalInside = new Stopwatch();// секундомер измеряет время выолнения петли измерений внутри первого секундомера
+        private Action<GetValues> ReportBD;//событие для передачи из потока в базу данных
 
         #region measurement loop
 
@@ -321,7 +335,7 @@ namespace ComPortTestForm
                     if (value != null)
                     {
                         var temp = String.Join("", value.Where((ch) => !unnecessary.Contains(ch)));
-                    textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetV.Text = temp));
+                        textBoxSupplyGetV?.Invoke((Action)(() => textBoxMeterGetV.Text = temp));
                     }
                 }
                 //
@@ -340,7 +354,7 @@ namespace ComPortTestForm
                 //
                 //
                 WaitSuspenseThreadMeter.Set();//команда выполнена можно отпускать поток там(1)
-               // Debug.WriteLine("loop 2 wait");
+                                              // Debug.WriteLine("loop 2 wait");
                 SuspenseMeter.WaitOne();//для оатсновки птели измерений кнопками
                 //Debug.WriteLine("loop 2 continue");
                 WaitSuspenseThreadMeter.Reset();//начинаем петлю измерений блокуирем потоки кнопок до его отпуска в (1)
@@ -351,10 +365,7 @@ namespace ComPortTestForm
 
         #endregion
 
-        #region measurement timer 
-
-        Stopwatch ClockCommandInterval = new Stopwatch();//секундомер измеряет время выолнения петли измерений
-        Stopwatch ClockCommandIntervalInside = new Stopwatch();// секундомер измеряет время выолнения петли измерений внутри первого секундомера
+        #region measurement timer & counter
 
         //TODO обьеденить в один метод и оптимизировать(GetMaxValueMeter и GetMinValueMeter)
         /// <summary>
@@ -380,7 +391,7 @@ namespace ComPortTestForm
                 //выполняем команды прибора 
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);//сброс настроек
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
-             
+
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);//установка  настроек замеров, прибор с этого момента начинает замеры
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
                 //
@@ -393,16 +404,16 @@ namespace ComPortTestForm
                 //500 задержка для заблаговременной остановки запущенной петли измерений
 
                 ThreadPause.WaitOne(delayPlusPause);//останнавливаем текущий поток на необходимую для испытаний временной интервал
-                
+
                 ClockCommandIntervalInside.Restart();//запуск доп секундомера для задержки заблаговременной остановки запущенной петли измерений
 
                 SuspenseMeter.Reset();//остановка петли измерений для считывния значений
 
                 //Debug.Write($" задержка 2 до выполнениея петли измерений {ClockCommandInterval.Elapsed} измерение номер {countLoop}\n");
-                
+
                 WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли измерений и совобожения компорта
-                
-                var delayInside  = (int)ClockCommandIntervalInside.Elapsed.TotalMilliseconds;//задержка 
+
+                var delayInside = (int)ClockCommandIntervalInside.Elapsed.TotalMilliseconds;//задержка 
 
                 var delauPlusPauseInside = 500 - delayInside;//
 
@@ -414,13 +425,17 @@ namespace ComPortTestForm
                 SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);//отправляем команду на считывание
                 SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
 
-                Debug.Write($"общая задержка {ClockCommandInterval.Elapsed} измерение номер {countLoop}\n");
+                var generalElapsed = TimeSpan.FromSeconds(Math.Round(ClockCommandInterval.Elapsed.TotalSeconds));//получаем округленное время замера без мс
+
+                //Debug.Write($"общая задержка {generalElapsed} измерение номер {countLoop}\n");
+
                 Thread.Sleep(50);
 
-                
+                //TODO убрать в класс компорта
                 var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
 
                 var resultVolt = SerialMeterVolt.Read();//считываем значение из буфера прибора
+                //TODO resultVolt.Where((ch) => !unnecessary.Contains(ch)) убрать в класс компорта
                 var tempV = String.Join("", resultVolt.Where((ch) => !unnecessary.Contains(ch)));
                 textBoxMeterGetMaxV?.Invoke((Action)(() => textBoxMeterGetMaxV.Text = tempV));
 
@@ -428,13 +443,17 @@ namespace ComPortTestForm
                 var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
                 textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMaxA.Text = tempC));
 
+                ReportBD?.Invoke(new GetValues(tempV, tempC, generalElapsed));//событие для отправки в базу данных
+
                 SuspenseMeter.Set();//продолить петлю измерений значений
 
+                //для выхода из испытаний по счетчику
                 if (countLoop >= loop)
                 {
                     SourceMinMaxMeter?.Cancel();
                 }
                 countLoop += 1;
+                //
             }
         }
 
@@ -538,132 +557,7 @@ namespace ComPortTestForm
         #endregion
 
         #endregion
-
     }
-
-    #region mesaure pattern
-
-    public class GetValues
-    {
-        public int Id { get; set; }
-        public string Voltage { get; set; }
-        public string Ampere { get; set; }
-        public DateTime DateTime { get; set; } = DateTime.Now;
-
-        public GetValues(string voltage, string ampere) //,DateTime dateTime)
-        {
-
-            Voltage = voltage;
-            Ampere = ampere;
-            //DateTime = dateTime;
-        }
-
-        public GetValues()
-        {
-
-        }
-    }
-
-    #endregion
-
-    #region db init 
-    public class ApplicationContext : DbContext
-    {
-        //представляет набор сущностей, хранящихся в базе данных
-        public DbSet<GetValues> Users { get; set; }
-        private string DBPath = "DataBaseSupply.db";
-
-        public ApplicationContext()
-        {
-            if (!File.Exists(DBPath))
-            {
-                Database.EnsureCreated();
-            }
-
-        }
-
-        //Переопределение у класса контекста данных метода
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite($"Data Source = {DBPath}"); //В этот метод передается объект DbContextOptionsBuilder,
-
-        // который позволяет создать параметры подключения. Для их создания вызывается метод UseSqlServer, в который передается строка подключения.
-    }
-
-    #endregion
-
-
-    #region serial port
-
-    public class MySerialPort
-    {
-        private readonly int Number;
-        private readonly int BaudRate;
-        private readonly int Parity;
-        private GodSerialPort Serial;
-
-        public Action<string> DataReceived;
-        public Func<string, string> CommandReceived;
-        public event Action<Exception> ReceiveErrorMessage; //вывод исключений
-
-        public bool flag;
-
-        public MySerialPort(int number, int baudRate, int parity)
-        {
-            Number = number;
-            BaudRate = baudRate;
-            Parity = parity;
-
-        }
-
-        public void Open()
-        {
-            if (Serial == null || !Serial.IsOpen)
-            {
-                Serial = new GodSerialPort($"COM{Number}", BaudRate, Parity);
-                Serial.DataFormat = SerialPortDataFormat.Char;
-                Serial.Open();
-            }
-        }
-        public void Write(string message)
-        {
-            const string END_OF_LINE = "\r\n";
-
-            var dataBytes = Encoding.UTF8.GetBytes(message + END_OF_LINE);
-            Serial.Write(dataBytes);
-            //Serial.WriteAsciiString(message + END_OF_LINE);
-
-        }
-
-        public string Read()
-        {
-            return Serial.ReadString();
-
-            //var dataBytes = Encoding.UTF8.GetString(Serial.Read());
-            //return dataBytes;
-
-        }
-
-        public void Close()
-        {
-            if (Serial != null && Serial.IsOpen)
-            {
-                try
-                {
-                    flag = false;
-                    Serial.Close();
-
-                }
-                catch (Exception exception)
-                {
-                    ReceiveErrorMessage?.Invoke(exception);
-                    throw;
-                }
-            }
-        }
-    }
-
-    #endregion
-
     #region commands libs
 
     public static class CommandsSupplyGw //CommandsSupplyPSH
@@ -717,5 +611,4 @@ namespace ComPortTestForm
     }
 
     #endregion
-
 }
