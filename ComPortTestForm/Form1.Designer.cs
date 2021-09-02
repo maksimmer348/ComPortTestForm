@@ -368,7 +368,7 @@ namespace ComPortTestForm
             this.numericUpDownRepeatTimer.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownRepeatTimer.TabIndex = 34;
             this.numericUpDownRepeatTimer.Value = new decimal(new int[] {
-            5,
+            1,
             0,
             0,
             0});
@@ -395,6 +395,7 @@ namespace ComPortTestForm
             this.numericUpDownSetMeterH.Name = "numericUpDownSetMeterH";
             this.numericUpDownSetMeterH.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownSetMeterH.TabIndex = 20;
+            this.numericUpDownSetMeterH.ValueChanged += new System.EventHandler(this.numericUpDownSetMeterH_ValueChanged);
             // 
             // numericUpDownSetMeterS
             // 
@@ -402,11 +403,6 @@ namespace ComPortTestForm
             this.numericUpDownSetMeterS.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDownSetMeterS.Maximum = new decimal(new int[] {
             59,
-            0,
-            0,
-            0});
-            this.numericUpDownSetMeterS.Minimum = new decimal(new int[] {
-            1,
             0,
             0,
             0});
@@ -418,6 +414,7 @@ namespace ComPortTestForm
             0,
             0,
             0});
+            this.numericUpDownSetMeterS.ValueChanged += new System.EventHandler(this.numericUpDownSetMeterS_ValueChanged);
             // 
             // label11
             // 
@@ -451,6 +448,7 @@ namespace ComPortTestForm
             this.numericUpDownSetMeterM.Name = "numericUpDownSetMeterM";
             this.numericUpDownSetMeterM.Size = new System.Drawing.Size(62, 23);
             this.numericUpDownSetMeterM.TabIndex = 25;
+            this.numericUpDownSetMeterM.ValueChanged += new System.EventHandler(this.numericUpDownSetMeterM_ValueChanged);
             // 
             // buttonStopMesaureTimer
             // 

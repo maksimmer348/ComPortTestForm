@@ -78,6 +78,33 @@ namespace ComPortTestForm
             }
         }
 
+        void LockedZeroSeconds()
+        {
+            if (numericUpDownSetMeterM.Value <= 0 && numericUpDownSetMeterH.Value <= 0)
+            {
+                numericUpDownSetMeterS.Minimum = 1;
+            }
+            else
+            {
+                numericUpDownSetMeterS.Minimum = 0;
+            }
+        }
+
+        private void numericUpDownSetMeterS_ValueChanged(object sender, EventArgs e)
+        {
+            LockedZeroSeconds();
+        }
+
+        private void numericUpDownSetMeterH_ValueChanged(object sender, EventArgs e)
+        {
+            LockedZeroSeconds();
+        }
+
+        private void numericUpDownSetMeterM_ValueChanged(object sender, EventArgs e)
+        {
+            LockedZeroSeconds();
+        }
+
         #region Supply
 
         MySerialPort SerialSupply = new MySerialPort(21, 57600, 0);
@@ -313,9 +340,9 @@ namespace ComPortTestForm
                 //
                 //
                 WaitSuspenseThreadMeter.Set();//команда выполнена можно отпускать поток там(1)
-                //Debug.WriteLine("loop wait");
+               // Debug.WriteLine("loop 2 wait");
                 SuspenseMeter.WaitOne();//для оатсновки птели измерений кнопками
-                //Debug.WriteLine("loop continue");
+                //Debug.WriteLine("loop 2 continue");
                 WaitSuspenseThreadMeter.Reset();//начинаем петлю измерений блокуирем потоки кнопок до его отпуска в (1)
                 //
                 //
@@ -326,54 +353,68 @@ namespace ComPortTestForm
 
         #region measurement timer 
 
-        Stopwatch Clock = new Stopwatch();//отладочный секундомер
-        Stopwatch Clock1 = new Stopwatch();//отладочный секундомер
+        Stopwatch ClockCommandInterval = new Stopwatch();//секундомер измеряет время выолнения петли измерений
+        Stopwatch ClockCommandIntervalInside = new Stopwatch();// секундомер измеряет время выолнения петли измерений внутри первого секундомера
 
         //TODO обьеденить в один метод и оптимизировать(GetMaxValueMeter и GetMinValueMeter)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="loop">установкка количества циклов</param>
+        /// <param name="pause">временной интервал на измерение</param>
         private void GetMaxValueMeter(decimal loop = 1, int pause = 0)
         {
-            int countLoop = 1;// клоичество рабочих циклов
+            int countLoop = 1;// счетчик количества рабочих циклов 
+
             while (!TokenMinMaxMeter.IsCancellationRequested)
             {
-                Clock.Restart();//обнуление часов при кажом цикле
+                ClockCommandInterval.Restart();//запустили секундомер
 
-                SuspenseMeter.Reset();//приостановка петли измерений значений, для отправки команды в прибор (далее просто петля измерений)
-                WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли и совобожения компорта
+                SuspenseMeter.Reset();//подали комаду на соатновку петли измерений
+                WaitSuspenseThreadMeter.WaitOne();//ждем когда петля измерений остановится
 
-                var delay = Clock.Elapsed;
+                var delay = ClockCommandInterval.Elapsed;//измерили задержку на выполнение птели измерений
 
-                Debug.Write($"задержка на команду {delay} петля {countLoop}\n");
+                //Debug.Write($"задержка петлю измерений {delay}, перед ывполнением команд прибора, измерение номер {countLoop}\n");
 
+                //выполняем команды прибора 
                 SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);//сброс настроек
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MODE_OFF);
              
-                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
+                SerialMeterVolt.Write(CommandsMeterGDM.SET_CALCULATE_MAX);//установка  настроек замеров, прибор с этого момента начинает замеры
                 SerialMeterCurr.Write(CommandsMeterGDM.SET_CALCULATE_MAX);
                 //
                 //
-                SuspenseMeter.Set();//запуск петли измерений на время задержки испытания
+                //установка временого инвтервала для испытаний
+                SuspenseMeter.Set();//запускаем петлю измерений
 
-                var delauPlusPause = pause - ((int)delay.TotalMilliseconds - 500);//считаем задержку за вычетом задержки на петлю измерений и команды выше
+                var delayPlusPause = pause - ((int)delay.TotalMilliseconds + 500);//вычисляем общий временной интервал операции выичелния для прибора
+                //где pause -установленое оператором интервал на измерение, (int)delay.TotalMilliseconds задержка на выполнение птели измерений,
+                //500 задержка для заблаговременной остановки запущенной петли измерений
 
-                ThreadPause.WaitOne(delauPlusPause);//останавливаем этот поток, прибор с этого момента и до конца паузы вычисляет максимальное значение напряжения и тока
-                Clock1.Restart();
-                SuspenseMeter.Reset();// остановка петли измерений для считывния значений
+                ThreadPause.WaitOne(delayPlusPause);//останнавливаем текущий поток на необходимую для испытаний временной интервал
+                
+                ClockCommandIntervalInside.Restart();//запуск доп секундомера для задержки заблаговременной остановки запущенной петли измерений
 
-                Debug.Write($" задержка до выполнениея петли измерений {Clock.Elapsed} петля {countLoop}\n");
+                SuspenseMeter.Reset();//остановка петли измерений для считывния значений
+
+                //Debug.Write($" задержка 2 до выполнениея петли измерений {ClockCommandInterval.Elapsed} измерение номер {countLoop}\n");
                 
                 WaitSuspenseThreadMeter.WaitOne();//ждем выполнения петли измерений и совобожения компорта
-                 var i = (int)Clock1.Elapsed.TotalMilliseconds;
                 
-                Clock.Restart();
-                Thread.Sleep(500 - i);
-                
+                var delayInside  = (int)ClockCommandIntervalInside.Elapsed.TotalMilliseconds;//задержка 
+
+                var delauPlusPauseInside = 500 - delayInside;//
+
+                //Debug.Write($"задержка 2 на петлю измерений {ClockCommandIntervalInside.Elapsed} измерение номер {countLoop}\n");
+
+                Thread.Sleep(delauPlusPauseInside);//
                 //
                 //
                 SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MAX);//отправляем команду на считывание
                 SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MAX);
 
-                Debug.Write($"общая задержка {Clock.Elapsed} петля {countLoop}\n");
-
+                Debug.Write($"общая задержка {ClockCommandInterval.Elapsed} измерение номер {countLoop}\n");
                 Thread.Sleep(50);
 
                 
@@ -420,8 +461,8 @@ namespace ComPortTestForm
                 SerialMeterVolt.Write(CommandsMeterGDM.GET_CALCULATE_MIN);
                 SerialMeterCurr.Write(CommandsMeterGDM.GET_CALCULATE_MIN);
 
-                Clock.Stop();
-                Debug.Write(Clock.Elapsed);
+                ClockCommandInterval.Stop();
+                Debug.Write(ClockCommandInterval.Elapsed);
                 Thread.Sleep(50);
 
                 var unnecessary = new[] { '?', '\n', '\r', '+', 'E' };
@@ -433,6 +474,8 @@ namespace ComPortTestForm
                 var resultCurr = SerialMeterCurr.Read();
                 var tempC = String.Join("", resultCurr.Where((ch) => !unnecessary.Contains(ch)));
                 textBoxMeterGetMaxA?.Invoke((Action)(() => textBoxMeterGetMinA.Text = tempC));
+
+
 
                 SuspenseMeter.Set(); //продолить петлю измерений значений
 
@@ -448,7 +491,7 @@ namespace ComPortTestForm
         {
             ThreadPause.Reset();
 
-            Clock.Start();
+            ClockCommandInterval.Start();
 
             SourceMinMaxMeter = new CancellationTokenSource();
 
@@ -490,6 +533,7 @@ namespace ComPortTestForm
             var ss = new TimeSpan((int)h, (int)m, (int)s);
             return (int)ss.TotalMilliseconds;//задержка на отправк и принятие команд
         }
+
 
         #endregion
 
